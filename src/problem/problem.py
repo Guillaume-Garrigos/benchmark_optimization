@@ -55,8 +55,6 @@ class Problem():
         else: # we assume that it is a lambda function of nb_data
             self.reg_parameter = config.reg_parameter(self.nb_data)
         logging.info("Regularization param: {}".format(self.reg_parameter))
-        # solution of the problem
-        self.solve()
         # handy handles
         self.function_sampled = lambda x, i: self.loss.val(self.data.label[i], self.data.feature[i, :] @ x) + self.reg_parameter * self.regularizer.val(x)
         self.gradient_sampled = lambda x, i: self.loss.prime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :] + self.reg_parameter * self.regularizer.prime(x)
@@ -67,6 +65,8 @@ class Problem():
             The switch between one kind of problem or the other should be handled 
             at the init of Problem(), certainly with some optional parameter
         """
+        # solution of the problem
+        self.solve()
 
 
     def solve(self):
@@ -75,6 +75,7 @@ class Problem():
         f_opt = 0.0
         optimum = None
         self.we_know_solution = False
+        #self.optimal_value = None
 
         if config.subopt and self.loss_name == "Logistic" and self.regularizer_name == "L2":
             print("Solve the problem with scipy fmin_l_bfgs_b")
@@ -84,8 +85,10 @@ class Problem():
 
             # verify that the gradient at optimum is close to zero
             g_opt = d_info['grad']
-            if np.sqrt((g_opt @ g_opt)) > 1e-5:
-                print("The gradient at given optimum is larger than 1e-5, we think it is not an optimum")
+            g_0 = self.gradient(np.zeros(self.dim))
+            if np.sqrt((g_opt @ g_opt)) > 1e-5*np.sqrt(g_0 @ g_0):
+                print("The gradient at given optimum is relatively larger than 1e-5, we think it is not an optimum")
+                # !!! what do we do here? set to None?
             else: # its ok
                 self.optimal_value = f_opt
                 self.optimal_solution = optimum
