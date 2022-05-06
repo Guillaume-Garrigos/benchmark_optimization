@@ -173,6 +173,7 @@ class Results(Dict2D):
         plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
         # loop over the algorithms (each will have different marker)
         markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
+        values_are_negative = any([any(record.value_avg<0) for record in record_list])
         for record, marker in zip(record_list, markers):
             param_plot = record.param.plot # each of those have different legend name
             # plot
@@ -182,10 +183,10 @@ class Results(Dict2D):
             else:
                 xaxis = record.xaxis
             # if the values are >0 we plot with logscale. Otherwise, normal scale
-            if (record.value_avg>0).all():
+            if values_are_negative:
+                plt.plot(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)   
+            else:             
                 plt.semilogy(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)
-            else:
-                plt.plot(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)                
             if param_plot.show_variance:
                 plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
 
