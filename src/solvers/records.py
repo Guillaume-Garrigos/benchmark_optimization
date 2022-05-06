@@ -36,7 +36,7 @@ class Records():
         """ Once recording values is done, we process them:
             take average, min, and max over the repetitions
         """
-        param = self.param.plot
+        param = self.param.plot 
         result = self.value_repetition
         # result is a list of lists with different lengths
         self.value_avg = []
@@ -115,5 +115,3 @@ class Time_epoch(Records):
     
     def store(self, solver):
         self.value.append(solver.total_running_time)
-
-
