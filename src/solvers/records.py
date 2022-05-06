@@ -101,7 +101,7 @@ class Function_value(Records):
         label = solver.problem.data.label
         reg = solver.problem.reg_parameter
         fval = np.mean(solver.loss.val(label, feature @ solver.x)) + reg * solver.regularizer.val(solver.x)
-        if solver.problem.optimal_value is not None:
+        if solver.problem.we_know_solution:
             fval = fval - solver.problem.optimal_value
         self.value.append(fval)
 
