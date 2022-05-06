@@ -26,7 +26,7 @@ def run_solvers(problem):
     # Get a list of the available solvers. Nasty but at least we do not need to come back here if create a new solver.
     list_solvers = [ algo for algo in Solver.__subclasses__() if algo.__name__[0] != '_' ]
     # !!! to be removed
-    print([algo.name for algo in list_solvers])
+    #print("List of available solvers : "+str([algo.name for algo in list_solvers]))
     # now we run each solver and stack the results
     for algo in list_solvers:
         algo_name = algo.name # accessible as a class variable (even before init)
