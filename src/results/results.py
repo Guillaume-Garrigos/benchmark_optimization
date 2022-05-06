@@ -180,7 +180,11 @@ class Results(Dict2D):
                 param_plot.xlabel = "Time (s)"
             else:
                 xaxis = record.xaxis
-            plt.semilogy(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)
+            # if the values are >0 we plot with logscale. Otherwise, normal scale
+            if (record.value_avg>0).all():
+                plt.semilogy(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)
+            else:
+                plt.plot(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)                
             if param_plot.show_variance:
                 plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
 
