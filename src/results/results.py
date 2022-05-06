@@ -110,8 +110,9 @@ class Results(Dict2D):
     def save(self):
         for solver_name in self.xkeys():
             for record_name in self.ykeys():
-                record = self[solver_name][record_name]
-                record.save() # see Record.save
+                if self.isdefined(solver_name, record_name):
+                    record = self[solver_name][record_name]
+                    record.save() # see Record.save
 
     def extract_list_given_solver(self, solver_name):
         dico = self.getvalue_x(solver_name)
