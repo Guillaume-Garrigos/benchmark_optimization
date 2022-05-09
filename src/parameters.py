@@ -17,6 +17,7 @@ class Parameters():
         self.solvers_to_load = config.solvers_to_load
         self.verbose = config.verbose
         self.measure_time = config.measure_time
+        self.records_to_plot = config.records_to_plot
         self.do_we_save=config.save,
         self.data_name = data.name
         self.data_path = data.path

@@ -214,7 +214,8 @@ class Results(Dict2D):
 
     def plot_all(self, xaxis_time=False):
         for record_name in self.ykeys():
-            if record_name != "time_epoch": # we don't want to plot that. Could use a blacklist if need to generalize
+            if record_name in self.param.records_to_plot:
+            #if record_name != "time_epoch": # we don't want to plot that. Could use a blacklist if need to generalize
                 print(f"Start plotting the results for {record_name}")
                 self.plot_parallel(record_name)
                 if xaxis_time: # second pass for the plots wrt time
