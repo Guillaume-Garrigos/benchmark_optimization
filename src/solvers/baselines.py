@@ -58,9 +58,10 @@ class SGD(Solver):
     name = "SGD"
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self))
+        self.append_records(Gradient_norm(self), Function_value(self), Stepsize(self))
         self.set_learning_rate()
         self.lr = self.lr * 0.25
+        self.stepsize = self.lr
 
     def initialization_variables(self):
         Solver.initialization_variables(self)
