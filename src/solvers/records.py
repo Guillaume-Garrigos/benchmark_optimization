@@ -55,10 +55,6 @@ class Records():
         else:
             len_cut = len(self.value_avg)
         self.value_avg = self.value_avg[:len_cut]
-        if (self.value_avg < 0).any(): # this to be IMPROVED
-            print("WARNING: there are negative numbers in sub-optimality plots !!!")
-            print("WARNING: replace all negative numbers by absolute in in sub-optimality plots !!!")
-            self.value_avg = np.abs(self.value_avg)
         # compute min/max for displaying variance
         self.value_min = np.min(result, axis=0)[:len(self.value_avg)]
         self.value_max = np.max(result, axis=0)[:len(self.value_avg)]
@@ -115,3 +111,30 @@ class Time_epoch(Records):
     
     def store(self, solver):
         self.value.append(solver.total_running_time)
+        
+        
+# New record : the stepsize (whatever it is as long it is called .stepsize)
+class Stepsize(Records):
+    name = "stepsize"
+    def __init__(self, solver):
+        Records.__init__(self, self.name, solver)
+        self.param.plot.xlabel = "Effective Passes"
+        self.param.plot.ylabel = "Stepsize"
+        self.param.plot.threshold = None # we don't want to threshold that
+    
+    def store(self, solver):
+        self.value.append(solver.stepsize)
+        
+class smin(Records):
+    name = "smin"
+    def __init__(self, solver):
+        Records.__init__(self, self.name, solver)
+        self.param.plot.xlabel = "Effective Passes"
+        self.param.plot.ylabel = r"$s_{min}$"
+        self.param.plot.threshold = None # we don't want to threshold that
+    
+    def store(self, solver):
+        s_min = solver.s_min
+        if solver.problem.we_know_solution:
+            s_min = s_min - solver.problem.optimal_value
+        self.value.append(s_min)
