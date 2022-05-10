@@ -88,7 +88,8 @@ class Problem():
             g_0 = self.gradient(np.zeros(self.dim))
             if np.sqrt((g_opt @ g_opt)) > 1e-5*np.sqrt(g_0 @ g_0):
                 print("The gradient at given optimum is relatively larger than 1e-5, we think it is not an optimum")
-                # !!! what do we do here? set to None?
+                # here self.we_know_solution remains equal to False
+                # this is what should be tested later in the code
             else: # its ok
                 self.optimal_value = f_opt
                 self.optimal_solution = optimum
