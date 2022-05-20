@@ -1,0 +1,3 @@
+[submodule "src/solvers/adaptive_polyak_methods"]
+	path = src/solvers/adaptive_polyak_methods
+	url = https://github.com/Guillaume-Garrigos/adaptive_polyak_methods
