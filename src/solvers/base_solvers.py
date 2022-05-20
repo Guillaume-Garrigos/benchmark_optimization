@@ -2,8 +2,6 @@ import numpy as np
 from src import utils
 
 from src.solvers.solver import Solver
-#from src.solvers.base_records import *
-utils.import_all_classes(folder_path="src/solvers/", class_name='Records')
 
 # ==================================
 # Baseline methods
