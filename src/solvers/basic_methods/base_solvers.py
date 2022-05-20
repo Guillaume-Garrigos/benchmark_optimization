@@ -1,7 +1,7 @@
 import numpy as np
 from src import utils
 
-from src.solvers.solver import Solver
+from src.solvers import Solver
 
 # ==================================
 # Baseline methods
