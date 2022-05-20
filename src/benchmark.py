@@ -2,12 +2,11 @@ import os
 import logging
 import time
 
-#from . import config
 import config as config
 from src.problem.data import Data
 from src.problem.problem import Problem
 from src.results.results import Results
-from src.solvers.solver import Solver # this does implicit things in its __init__.py
+from src.solvers import Solver # this does implicit things in its __init__.py
 
 def run_solvers(problem):
     """ given a Problem(), run multiple solvers against it, and return Results() """

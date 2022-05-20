@@ -2,7 +2,8 @@ import numpy as np
 from src import utils
 
 from src.solvers.solver import Solver
-from src.solvers.records import *
+#from src.solvers.base_records import *
+utils.import_all_classes(folder_path="src/solvers/", class_name='Records')
 
 # ==================================
 # Baseline methods
@@ -15,7 +16,7 @@ class SAG(Solver):
 
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self)) 
+        self.append_records("gradient_norm", "function_value")
         self.set_learning_rate()
         # Old gradients
         self.gradient_memory = None
@@ -58,7 +59,7 @@ class SGD(Solver):
     name = "SGD"
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self), Stepsize(self))
+        self.append_records("gradient_norm", "function_value", "stepsize")
         self.set_learning_rate()
         self.lr = self.lr * 0.25
         self.stepsize = self.lr
@@ -108,7 +109,7 @@ class SVRG(Solver):
     name = "SVRG"
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self)) 
+        self.append_records("gradient_norm", "function_value")
         self.set_learning_rate()
         self.x_ref = None
         self.grad_ref = None
@@ -166,7 +167,7 @@ class Adam(Solver):
     name = "Adam"
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self)) 
+        self.append_records("gradient_norm", "function_value")
         self.lr = 0.001
         self.beta1 = 0.9
         self.beta2 = 0.999
@@ -209,7 +210,7 @@ class GD(Solver):
     name = "GD"
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self)) 
+        self.append_records("gradient_norm", "function_value")
         self.set_learning_rate()
 
     def initialization_variables(self):
@@ -239,7 +240,7 @@ class Newton(Solver):
     name = "Newton"
     def __init__(self, problem):
         Solver.__init__(self, problem)
-        self.append_records(Gradient_norm(self), Function_value(self))
+        self.append_records("gradient_norm", "function_value")
         self.lr = 1.0
 
     def initialization_variables(self):

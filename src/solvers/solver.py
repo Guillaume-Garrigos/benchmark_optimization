@@ -4,7 +4,7 @@ import time
 import logging
 
 from src.parameters import Parameters
-from src.solvers.records import Time_epoch
+from src.solvers import Records
 
 
 
@@ -32,8 +32,8 @@ class Solver(metaclass=ABCMeta):
         self.total_running_time = 0.0
         self.records = {} # { record_name : Record() }
         if self.param.measure_time:
-            self.append_records(Time_epoch(self)) 
-
+            self.append_records("time_epoch") 
+    """
     def append_records(self, *tuple_of_class):
         # tag the Records with the name of the Solver they'll belong to
         for cls in tuple_of_class:
@@ -41,6 +41,19 @@ class Solver(metaclass=ABCMeta):
             cls.data_name = self.problem.data.name
         update = { cls.name : cls for cls in tuple_of_class }
         self.records = { **self.records, **update }
+    """
+    def append_records(self, *tuple_of_class_name):
+        # all the existing records:
+        list_records = [ record for record in Records.__subclasses__() if record.__name__[0] != '_' ]
+        dict_of_records = {}
+        # tag the Records with the name of the Solver they'll belong to
+        for cls in list_records:
+            if cls.name in tuple_of_class_name: # we want this Record for this Solver
+                record_instance = cls(self)
+                record_instance.solver_name = self.name
+                record_instance.data_name = self.problem.data.name
+                dict_of_records = { **dict_of_records, cls.name : record_instance }
+        self.records = { **self.records, **dict_of_records }
 
     # Runs the Solver. It calls a handful of subroutines, defined after
     def run(self):
