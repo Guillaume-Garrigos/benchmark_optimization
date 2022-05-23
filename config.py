@@ -8,16 +8,16 @@ problem_type = 'classification'  # type of problem, supports 'classification' an
 loss = 'Logistic'  # str, loss function name; support "Logistic" for classification; "L2" or "PseudoHuber" for regression
 regularizer = "L2"  # str, regularizer type name; support "L2" or "PseudoHuber"
 reg_parameter = lambda n: 1./np.sqrt(n) # the regularization parameter multiplying the regularizer. Can be a float, or a lambda function depending on the number of data
-dataset_names=["dummy"]
-dataset_paths=["datasets/dummy.txt"]
+dataset_names=["fourclass"]
+dataset_paths=["data/fourclass.txt"]
 
 # solvers we want to benchmark
-solvers_to_run = ["SVRG","SAN"] # see the classes in src.solvers.whatever.py
+solvers_to_run = ["SVRG","SGD","SGD_OPS_SI"] # see the classes in src.solvers.whatever.py
 solvers_to_load = [""]  # list of algorithm names whose results are ready to load (make sure the results exist).
 
 # parameters controlling how we run the algorithms
-n_repetition = 5  # number of repetitions run for stochastic algorithm
-epochs = 15  # number of epochs to run for one algorithm, i.e., effective data passes
+n_repetition = 2  # number of repetitions run for stochastic algorithm
+epochs = 20  # number of epochs to run for one algorithm, i.e., effective data passes
 lr = 1e-2  # float, learning rate for SAN/SANA. default: 1.0
 tol = 1e-8  # float, the algorithms will be stopped when the norm of gradient reaches below this threshold.
 initialization = "zeros" # default. Could pass a lambda function as well, or "random" (not implemented)
@@ -29,6 +29,7 @@ measure_time = True # do we measure time elapsed for each epoch? If so, each qua
 dpi = 50 #1200
 plot_threshold = 1e-12 # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
 subopt = 1  # Should we plot sub-optimality curves? 1 for yes, 0 for no. Default is 0.
+records_to_plot = ["function_value"]
 
 # verbose
 save = True # do we save the results?
