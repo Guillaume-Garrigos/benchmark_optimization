@@ -18,18 +18,18 @@ solvers_to_load = [""]  # list of algorithm names whose results are ready to loa
 # parameters controlling how we run the algorithms
 n_repetition = 2  # number of repetitions run for stochastic algorithm
 epochs = 20  # number of epochs to run for one algorithm, i.e., effective data passes
-lr = 1e-2  # float, learning rate for SAN/SANA. default: 1.0
+lr = 1.  # float, learning rate for SAN/SANA. default: 1.0
 tol = 1e-8  # float, the algorithms will be stopped when the norm of gradient reaches below this threshold.
 initialization = "zeros" # default. Could pass a lambda function as well, or "random" (not implemented)
 distribution = "uniform"  # for some algorithms, we need to sample data wrt a distribution. Can be "uniform". Other wise must be a lambda function taking nb_data as an input and returning a certain np.array
 # example : lambda nb_data, p0=1./(nb_data + 1): np.array([p0] + [(1 - p0) / nb_data] * nb_data)
 
 # parameters controlling the display of the results
-measure_time = True # do we measure time elapsed for each epoch? If so, each quantity to be plotted will be plot with respect to both [number of epochs] and [time].
+measure_time = False # do we measure time elapsed for each epoch? If so, each quantity to be plotted will be plot with respect to both [number of epochs] and [time].
 dpi = 50 #1200
 plot_threshold = 1e-12 # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
 subopt = 1  # Should we plot sub-optimality curves? 1 for yes, 0 for no. Default is 0.
-records_to_plot = ["function_value"]
+records_to_plot = ["function_value", "smin"]
 
 # verbose
 save = True # do we save the results?
