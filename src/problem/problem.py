@@ -58,8 +58,12 @@ class Problem():
         # handy handles
         self.function_sampled = lambda x, i: self.loss.val(self.data.label[i], self.data.feature[i, :] @ x) + self.reg_parameter * self.regularizer.val(x)
         self.gradient_sampled = lambda x, i: self.loss.prime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :] + self.reg_parameter * self.regularizer.prime(x)
+        self.hessian_sampled = lambda x, i: self.loss.dprime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :].reshape((-1,1)) @ self.data.feature[i, :].reshape((1,-1)) + self.reg_parameter * self.regularizer.dprime(x)
         self.function = lambda x: np.mean(self.loss.val(self.data.label, self.data.feature @ x).reshape(-1, 1), axis=0) + self.reg_parameter * self.regularizer.val(x)
         self.gradient = lambda x: np.mean(self.loss.prime(self.data.label, self.data.feature @ x).reshape(-1, 1) * self.data.feature, axis=0) + self.reg_parameter * self.regularizer.prime(x)
+        self.hessian = lambda x: self.data.feature.T @ ( self.loss.dprime(self.data.label, self.data.feature @ x).reshape(-1, 1) * self.data.feature )/self.nb_data + self.reg_parameter * self.regularizer.dprime(x)
+        # tried to be efficient above, I hope it works. 
+        # Basically using sum_i u_i u_i.T = U.T U where U=rows(u_i.T)
         """ The above could be easily modified if we want to work with autodiff
             in the end we only need access to functionand gradient handles.
             The switch between one kind of problem or the other should be handled 
