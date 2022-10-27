@@ -201,8 +201,6 @@ class Results(Dict2D):
         if param_plot.title is not None:
             plt.title(param_plot.title, fontsize=25)
         if param_plot.do_we_save:
-            if not os.path.exists(param_plot.fig_folder):
-                os.makedirs(param_plot.fig_folder)
             if xaxis_time:
                 fig_path = param_plot.fig_path + '-time'
             else:

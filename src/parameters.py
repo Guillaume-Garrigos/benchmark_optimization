@@ -1,5 +1,6 @@
 import os
 import config
+import time
 
 
 ##################################################
@@ -21,8 +22,12 @@ class Parameters():
         self.do_we_save=config.save,
         self.data_name = data.name
         self.data_path = data.path
-        self.output_folder = os.path.join(config.output_path, self.data_name)
-        self.plot = Plot_param(self)
+        self.xp_name = config.name
+        self.output_folder = os.path.join(config.output_path, config.name, self.data_name)
+        # make sure that the folder exists everytime Parameters.output_folder is used
+        if not os.path.exists(self.output_folder): 
+            os.makedirs(self.output_folder) 
+        self.plot = Plot_param(self) # this is last bc it calls Parameters
 
 class Plot_param(): 
     # A class to encode parameters to display plots. 

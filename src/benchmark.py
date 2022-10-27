@@ -11,16 +11,12 @@ from src.solvers import Solver # this does implicit things in its __init__.py
 def run_solvers(problem):
     """ given a Problem(), run multiple solvers against it, and return Results() """
     # setup the logging and outputing
-    data_name = problem.data.name
-    folder_path = os.path.join(config.output_path, data_name)
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
     logging.basicConfig(
-        filename=os.path.join(folder_path, config.log_file),
+        filename=os.path.join(problem.param.output_folder, config.log_file),
         level=logging.INFO, format='%(message)s')
     logging.info(time.ctime(time.time()))
     # Run solvers
-    print(f"Running each solver on {data_name}")
+    print(f"Running each solver on {problem.data.name}")
     results = Results(problem) # a 2D dict, each coefficient will be a Record
     # Get a list of the available solvers. Nasty but at least we do not need to come back here if create a new solver.
     list_solvers = [ algo for algo in Solver.__subclasses__() if algo.__name__[0] != '_' ]
@@ -28,9 +24,9 @@ def run_solvers(problem):
     #print("List of available solvers : "+str([algo.name for algo in list_solvers]))
     # now we run each solver and stack the results
     for algo in list_solvers:
-        algo_name = algo.name # accessible as a class variable (even before init)
-        if algo_name in problem.param.solvers_to_run : # we want to run it
-            print(f"Running solver '{algo_name}' on {data_name}")
+        # algo.name accessible as a class variable (even before init)
+        if algo.name in problem.param.solvers_to_run : # we want to run it
+            print(f"Running solver '{algo.name}' on {problem.data.name}")
             solver = algo(problem) # Instanciate a solver
             solver.run_repetition() # run the solver with repetitions
             results.set_records(solver.name, solver.records) # stores all the records from solver.records
