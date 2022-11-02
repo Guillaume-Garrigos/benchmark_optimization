@@ -2,7 +2,6 @@ import numpy as np
 import logging
 
 from src.parameters import Parameters
-import config
 import src.problem.loss as loss
 import src.problem.regularizer as regularizer
 from src import utils
@@ -26,13 +25,14 @@ class Problem():
     def __init__(self, data):
         # parameters
         self.param = Parameters(data)
+        config = self.param.config
         # data
         self.data = data
         self.nb_data = data.nb_data
         self.dim = data.dim
         # names
-        self.loss_name = config.loss
-        self.regularizer_name = config.regularizer
+        self.loss_name = config['problem']['loss']
+        self.regularizer_name = config['problem']['regularizer']
         # loss
         if self.loss_name == "L2":
             self.loss = loss.L2()
@@ -50,10 +50,11 @@ class Problem():
         else:
             raise Exception("Unknown regularizer type!")
         # regularization parameter
-        if isinstance(config.reg_parameter, float):
-            self.reg_parameter = config.reg_parameter
-        else: # we assume that it is a lambda function of nb_data
-            self.reg_parameter = config.reg_parameter(self.nb_data)
+        if isinstance(config['problem']['reg_parameter'], float):
+            self.reg_parameter = config['problem']['reg_parameter']
+        else: # we assume it is a string
+            if config['problem']['reg_parameter'] == "inv_sqrt_data":
+                self.reg_parameter = 1./np.sqrt(self.nb_data)
         logging.info("Regularization param: {}".format(self.reg_parameter))
         # handy handles
         self.function_sampled = lambda x, i: self.loss.val(self.data.label[i], self.data.feature[i, :] @ x) + self.reg_parameter * self.regularizer.val(x)
@@ -70,7 +71,9 @@ class Problem():
             at the init of Problem(), certainly with some optional parameter
         """
         # solution of the problem
-        self.solve()
+        self.we_know_solution = False
+        if config['results']['subopt']:
+            self.solve()
 
 
     def solve(self):
@@ -78,10 +81,8 @@ class Problem():
         # but only the L2 logistic regression is supported so far
         f_opt = 0.0
         optimum = None
-        self.we_know_solution = False
         #self.optimal_value = None
-
-        if config.subopt and self.loss_name == "Logistic" and self.regularizer_name == "L2":
+        if self.loss_name == "Logistic" and self.regularizer_name == "L2":
             print("Solve the problem with scipy fmin_l_bfgs_b")
             optimum, f_opt, d_info = fmin_l_bfgs_b(
                 func=utils.f_val_logistic, x0=np.zeros(self.dim), fprime=utils.f_grad_logistic,

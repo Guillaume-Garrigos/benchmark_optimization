@@ -136,3 +136,4 @@ datasets/*
 results/*
 output/*
 __pycache__*
+test/*

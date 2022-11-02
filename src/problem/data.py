@@ -4,7 +4,8 @@ from scipy.linalg.special_matrices import toeplitz
 from sklearn.datasets import load_svmlight_file
 
 import logging
-import config as config
+from src.parameters import get_config
+import os
 
 """ Data() is just a fancy dict gathering the couples (feature, label)
     needed to define our problem (see the class Problem() )
@@ -21,22 +22,23 @@ class Data():
         self.nb_data = None
         self.dim = None
     
-    def read(self, data_set, data_path):
+    def read(self, dataset_name, dataset_path_folder):
         # Given data (=features and labels) stored somewhere, loads it
-        self.name = data_set
-        self.path = data_path
-        X, y = get_data(data_path)
+        # must be stored in a file dataset_path_folder/dataset_name.txt
+        self.name = dataset_name
+        self.path = os.path.join(dataset_path_folder, dataset_name) + '.txt'
+        X, y = get_data(self.path)
         X = X.toarray()  # convert from scipy sparse matrix to dense if necessary
         logging.info("Data Sparsity: {}".format(sparsity(X)))
-
-        if config.problem_type == 'classification':
+        problem_type = get_config()['problem']['type']
+        if problem_type == 'classification':
             # label preprocessing for some dataset whose label is not {-1, 1}
             max_v, min_v = np.max(y), np.min(y)
             idx_min = (y == min_v)
             idx_max = (y == max_v)
             y[idx_min] = -1
             y[idx_max] = 1
-        elif config.problem_type == 'regression':
+        elif problem_type == 'regression':
             X = X / np.max(np.abs(X), axis=0)  # scale features to [-1, 1]
         else:
             raise Exception("Unknown problem type!")

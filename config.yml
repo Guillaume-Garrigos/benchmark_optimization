@@ -1,0 +1,45 @@
+# config file
+problem:
+    type: classification
+    loss: Logistic
+    regularizer: L2
+    reg_parameter: inv_sqrt_data
+    dataset_names:
+        - dummy
+    dataset_path_folder: datasets
+    
+results: 
+    output_path: output
+    xp_name: config via yaml
+    measure_time: False
+    save_data: True
+    verbose: True
+    log_file: log.txt
+    
+    dpi: 50
+    plot_threshold: 1.0e-12
+    subopt: True
+    records_to_plot:
+        - gradient_norm
+    
+solvers_parameters: # general parameters applied to all solvers. can be overwritten by specific solver parameters below
+    nb_repetition: 2
+    nb_epochs: 100
+    stepsize_factor: 0.5
+    tolerance: 1e-8
+    initialization: zeros
+    distribution: uniform
+    lr: 1.0
+    
+solvers: # list of solvers and their specific parameters. can have duplicates but name_result must differ
+    - SAN:
+        name_result: SAN_constant
+        stepsize_factor: 1.5
+        stepsize_type: constant
+    - SAN:
+        name_result: SAN_vanishing
+        stepsize_factor: 1.5
+        stepsize_type: vanishing
+        stepsize_vanishing_exponent: 0.5
+    - SGD
+    

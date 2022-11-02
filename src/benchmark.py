@@ -2,7 +2,7 @@ import os
 import logging
 import time
 
-import config as config
+from src.parameters import get_config
 from src.problem.data import Data
 from src.problem.problem import Problem
 from src.results.results import Results
@@ -12,7 +12,7 @@ def run_solvers(problem):
     """ given a Problem(), run multiple solvers against it, and return Results() """
     # setup the logging and outputing
     logging.basicConfig(
-        filename=os.path.join(problem.param.output_folder, config.log_file),
+        filename=os.path.join(problem.param.output_folder, problem.param.log_file),
         level=logging.INFO, format='%(message)s')
     logging.info(time.ctime(time.time()))
     # Run solvers
@@ -33,7 +33,7 @@ def run_solvers(problem):
     # process the values (extracts mean, min, max), make it ready for analysis
     # and provide each record with an alternate .xaxis_time to plot wrt time
     print("Process the results")
-    results.process_values(config.measure_time)
+    results.process_values(problem.param.measure_time)
     # eventually saves each records as a file into the folder defined in config
     results.save()
     logging.shutdown() # otherwise python keeps its hands on the log .txt file
@@ -44,22 +44,23 @@ def benchmark_plot(results):
     # We eventually complete results with records to load
     # we assume each record is loaded with a following path:
     #   output_directory/data_name/solver_name-record_name
-    results.load(config.solvers_to_load)
-    results.plot_all(xaxis_time = config.measure_time)
+    results.load(results.param.solvers_to_load)
+    results.plot_all(xaxis_time = results.param.measure_time)
     return
 
 def benchmark_datasets():
+    config = get_config()
     # loop over all datasets
-    for data_name, data_path in zip(config.dataset_names, config.dataset_paths):
-        print(f"START running {data_name}")
+    for dataset_name in config['problem']['dataset_names']:
+        print(f"START running {dataset_name}")
         # setup the main components of the problem, depending on the dataset
         data = Data()
-        data.read(data_name, data_path) # gathers the components of the data
+        data.read(dataset_name, config['problem']['dataset_path_folder']) # gathers the components of the data
         problem = Problem(data) # gathers the components defining the problem
         # solve the problem with multiple solvers
         results = run_solvers(problem)
         # plot the results
-        if config.verbose:
+        if problem.param.verbose:
             benchmark_plot(results)
-        print(f"END running {data_name}")
+        print(f"END running {dataset_name}")
     return

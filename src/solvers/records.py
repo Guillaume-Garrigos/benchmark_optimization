@@ -3,7 +3,6 @@ import os
 import pickle
 import copy
 
-import config
 
 
 # A class to encode records. Updated during the running phase, exploited during the plotting phase
@@ -16,7 +15,7 @@ class Records():
         self.value_repetition = []
         self.param = copy.deepcopy(solver.param) # we need a copy here otherwise record_name will change everytime. We could have been smarter but so far doesn't seem to explode memory
         self.param.plot.set_record_name(name)
-        self.do_we_save = config.save
+        self.do_we_save = solver.problem.param.do_we_save
     
     def store(self, solver): 
         # given a solver at a certain state, we compute some quantity and append it to Records.value

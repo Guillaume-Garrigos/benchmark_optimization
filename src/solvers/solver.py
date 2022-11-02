@@ -30,6 +30,7 @@ class Solver(metaclass=ABCMeta):
         self.x = None
         self.epoch_running_time = 0.0
         self.total_running_time = 0.0
+        self.epoch_current_nb = 0
         self.records = {} # { record_name : Record() }
         if self.param.measure_time:
             self.append_records("time_epoch") 
@@ -62,6 +63,7 @@ class Solver(metaclass=ABCMeta):
         self.store_records() # updates self.records[all].value at iteration 0
         # main loop
         for cnt in range(1, self.param.nb_epoch + 1):
+            self.epoch_current_nb = cnt
             # one epoch
             if self.param.measure_time:
                 start_time = time.time()
@@ -100,6 +102,7 @@ class Solver(metaclass=ABCMeta):
     @abstractmethod
     def run_epoch(self):
         pass # This is to be defined for each child Solver
+    
 
     def log_information(self, cnt):
         text = f"| Solver : {self.name} "
