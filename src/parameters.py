@@ -56,7 +56,6 @@ class Parameters():
         # Options for saving, logging, plotting
         self.solvers_to_run = config['solvers_parameters']['solvers_to_run']
         self.solvers_to_load = config['solvers_parameters']['solvers_to_load']
-        self.verbose = config['results']['verbose']
         self.measure_time = config['results']['measure_time']
         self.records_to_plot = config['results']['records_to_plot']
         self.do_we_plot = config['results']['do_we_plot'] or config['results']['save_plot']
