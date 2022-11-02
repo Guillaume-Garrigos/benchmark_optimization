@@ -67,13 +67,7 @@ class SGD(Solver):
         self.extrapolation_parameter = 1
 
     def set_learning_rate(self):
-        if self.problem.loss_name == "L2":
-            self.lr = self.param.lr / utils.max_Li_ridge(self.problem.data.feature, self.problem.reg_parameter)
-        elif self.problem.loss_name == "Logistic":
-            self.lr = self.param.lr / utils.max_Li_logistic(self.problem.data.feature, self.problem.reg_parameter)
-        else:
-            print("Warning!!!")
-            self.lr = 0.01
+        self.lr = self.param.lr / self.problem.expected_smoothness()
 
     def run_epoch(self):
         feature = self.problem.data.feature

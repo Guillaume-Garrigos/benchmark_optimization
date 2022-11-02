@@ -100,4 +100,13 @@ class Problem():
                 self.optimal_solution = optimum
                 self.we_know_solution = True
         return
+    
+    def expected_smoothness(self):
+        if self.loss_name == "L2":
+            return utils.max_Li_ridge(self.data.feature, self.reg_parameter)
+        elif self.loss_name == "Logistic":
+            return utils.max_Li_logistic(self.data.feature, self.reg_parameter)
+        else:
+            print(f"Warning: The loss {self.loss_name} is unknown. The expected smoothness constant couldn't be defined")
+            return 1.0
 ##################################################

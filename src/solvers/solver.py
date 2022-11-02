@@ -37,6 +37,7 @@ class Solver(metaclass=ABCMeta):
         self.epoch_running_time = 0.0
         self.total_running_time = 0.0
         self.epoch_current_nb = 0
+        self.iteration_nb = 0
         self.records = {} # { record_name : Record() }
         if self.param.measure_time:
             self.append_records("time_epoch") 
@@ -132,4 +133,18 @@ class Solver(metaclass=ABCMeta):
             record.value_repetition.append(record.value) # carved in stone
             record.value = [] # run is over so we can wipe it
         return
+
+    def get_stepsize_constant(self):
+        return self.stepsize_factor / self.problem.expected_smoothness()
+
+    def get_stepsize_vanishing(self):
+        return self.get_stepsize_constant() / ((self.iteration_nb + 1)**self.stepsize_vanishing_exponent)
+
+    def get_stepsize(self):
+        if self.stepsize_type == 'constant':
+            return self.get_stepsize_constant()
+        elif self.stepsize_type == 'vanishing':
+            return self.get_stepsize_vanishing()
+
+    
     

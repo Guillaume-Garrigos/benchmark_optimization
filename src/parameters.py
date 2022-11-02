@@ -7,14 +7,34 @@ def get_config():
     path = 'config.yml'
     with open(path, 'r') as stream:
         config = yaml.safe_load(stream)
-    # merge default and user values
-    with open('src/config_default.yml', 'r') as stream:
-        config_default = yaml.safe_load(stream)
-    config = { **config_default , **config } 
+    config = merge_default_param(config)
     # does some cleaning on the solvers parameters
     config = apply_default_solver_parameters(config)
     config['solvers_parameters']['solvers_to_run'] = get_list_solver_to_run(config)
     config['solvers_parameters']['solvers_to_load'] = get_list_solver_to_load(config)
+    return config
+
+def merge_default_param(config):
+    # local user > local default > global user > global default 
+    # merge default and user values at a global level
+    with open('src/config_default.yml', 'r') as stream:
+        config_default = yaml.safe_load(stream)
+    config['problem'] = { **config_default['problem'] , **config['problem'] } 
+    config['results'] = { **config_default['results'] , **config['results'] } 
+    config['solvers_parameters'] = { **config_default['solvers_parameters'] , **config['solvers_parameters'] } 
+    # now merge global parameters and per-solver parameters
+    solvers_list = config['solvers']
+    global_param = config['solvers_parameters']
+    for idx, list_item in enumerate(solvers_list):
+        if isinstance(list_item, str):
+            name_solver = list_item
+            local_param = {}
+        if isinstance(list_item, dict):
+            name_solver = list(list_item.keys())[0] # there should be only one key
+            local_param = list_item[name_solver]
+        param = { **global_param, 'flavor_name' : name_solver }
+        # todo : deal with local default parameters
+        solvers_list[idx] = { name_solver : { **param, **local_param } }
     return config
         
 def apply_default_solver_parameters(config):
