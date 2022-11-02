@@ -200,7 +200,7 @@ class Results(Dict2D):
         plt.grid(True)
         if param_plot.title is not None:
             plt.title(param_plot.title, fontsize=25)
-        if param_plot.do_we_save:
+        if param_plot.save_plot:
             if xaxis_time:
                 fig_path = param_plot.fig_path + '-time'
             else:

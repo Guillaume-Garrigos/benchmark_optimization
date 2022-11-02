@@ -8,6 +8,9 @@ from src.problem.problem import Problem
 from src.results.results import Results
 from src.solvers import Solver # this does implicit things in its __init__.py
 
+def get_list_implemented_solvers():
+    return [ algo for algo in Solver.__subclasses__() if algo.__name__[0] != '_' ]
+
 def run_solvers(problem):
     """ given a Problem(), run multiple solvers against it, and return Results() """
     # setup the logging and outputing
@@ -17,11 +20,9 @@ def run_solvers(problem):
     logging.info(time.ctime(time.time()))
     # Run solvers
     print(f"Running each solver on {problem.data.name}")
-    results = Results(problem) # a 2D dict, each coefficient will be a Record
+    results = Results(problem) # an empty 2D dict, each coefficient will be a Record
     # Get a list of the available solvers. Nasty but at least we do not need to come back here if create a new solver.
-    list_solvers = [ algo for algo in Solver.__subclasses__() if algo.__name__[0] != '_' ]
-    # !!! to be removed
-    #print("List of available solvers : "+str([algo.name for algo in list_solvers]))
+    list_solvers = get_list_implemented_solvers()
     # now we run each solver and stack the results
     for algo in list_solvers:
         # algo.name accessible as a class variable (even before init)
@@ -60,7 +61,7 @@ def benchmark_datasets():
         # solve the problem with multiple solvers
         results = run_solvers(problem)
         # plot the results
-        if problem.param.verbose:
+        if problem.param.do_we_plot:
             benchmark_plot(results)
         print(f"END running {dataset_name}")
     return

@@ -25,7 +25,7 @@ class Records():
         self.solver_name = solver.name
 
     def save(self):
-        if self.do_we_save:
+        if self.param.save_data:
             path = os.path.join(self.param.output_folder, self.solver_name + '-' + self.name)
             with open(path, 'wb') as fp:
                 pickle.dump(self, fp)

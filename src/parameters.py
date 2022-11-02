@@ -7,10 +7,6 @@ def get_config():
     path = 'config.yml'
     with open(path, 'r') as stream:
         config = yaml.safe_load(stream)
-    # save the config into a .yml file so it can be reused in the future
-    save_path = os.path.join(config['results']['output_path'], config['results']['xp_name'], 'config.yml')
-    with open(save_path, 'w') as outfile:
-        yaml.dump(config, outfile, default_flow_style=False)
     # merge default and user values
     with open('src/config_default.yml', 'r') as stream:
         config_default = yaml.safe_load(stream)
@@ -63,7 +59,10 @@ class Parameters():
         self.verbose = config['results']['verbose']
         self.measure_time = config['results']['measure_time']
         self.records_to_plot = config['results']['records_to_plot']
-        self.do_we_save = config['results']['save_data']
+        self.do_we_plot = config['results']['do_we_plot'] or config['results']['save_plot']
+        self.save_data = config['results']['save_data']
+        self.save_plot = config['results']['save_plot']
+        self.do_we_save = self.save_data or self.save_plot
         self.log_file = config['results']['log_file']
         self.measure_time = config['results']['measure_time']
         self.data_name = data.name
@@ -71,8 +70,12 @@ class Parameters():
         self.xp_name = config['results']['xp_name']
         self.output_folder = os.path.join(config['results']['output_path'], config['results']['xp_name'], self.data_name)
         # make sure that the folder exists everytime Parameters.output_folder is used
-        if not os.path.exists(self.output_folder): 
-            os.makedirs(self.output_folder) 
+        if self.do_we_save:
+            if not os.path.exists(self.output_folder): 
+                os.makedirs(self.output_folder)
+            # save the config into a .yml file so it can be reused in the future
+            with open(os.path.join(config['results']['output_path'], config['results']['xp_name'], 'config.yml'), 'w') as outfile:
+                yaml.dump(config, outfile, default_flow_style=False)
         self.plot = Plot_param(self) # this is last bc it calls Parameters
     
     
@@ -97,6 +100,9 @@ class Plot_param():
         self.measure_time = parameters.measure_time
         self.threshold = float(config['results']['plot_threshold']) # option to alter the plot
         self.show_variance = True # default
+        self.do_we_plot = parameters.do_we_plot
+        self.save_data = parameters.save_data
+        self.save_plot = parameters.save_plot
         self.do_we_save = parameters.do_we_save
     
     def set_record_name(self, name):
