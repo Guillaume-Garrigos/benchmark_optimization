@@ -12,8 +12,8 @@ class SAG(Solver):
     """
     name = "SAG"
 
-    def __init__(self, problem):
-        Solver.__init__(self, problem)
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
         self.set_learning_rate()
         # Old gradients
@@ -55,11 +55,11 @@ class SAG(Solver):
 class SGD(Solver):
 
     name = "SGD"
-    def __init__(self, problem):
-        Solver.__init__(self, problem)
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value", "stepsize")
         self.set_learning_rate()
-        self.lr = self.lr * 0.25
+        self.lr = self.lr * self.stepsize_factor
         self.stepsize = self.lr
 
     def initialization_variables(self):
@@ -105,8 +105,8 @@ class SVRG(Solver):
     """
 
     name = "SVRG"
-    def __init__(self, problem):
-        Solver.__init__(self, problem)
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
         self.set_learning_rate()
         self.x_ref = None
@@ -163,8 +163,8 @@ class SVRG(Solver):
 class Adam(Solver):
 
     name = "Adam"
-    def __init__(self, problem):
-        Solver.__init__(self, problem)
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
         self.lr = 0.001
         self.beta1 = 0.9
@@ -206,8 +206,8 @@ class Adam(Solver):
 class GD(Solver):
 
     name = "GD"
-    def __init__(self, problem):
-        Solver.__init__(self, problem)
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
         self.set_learning_rate()
 
@@ -236,8 +236,8 @@ class GD(Solver):
 class Newton(Solver):
 
     name = "Newton"
-    def __init__(self, problem):
-        Solver.__init__(self, problem)
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
         self.lr = 1.0
 

@@ -20,13 +20,19 @@ from src.solvers import Records
 
 class Solver(metaclass=ABCMeta):
 
-    def __init__(self, problem):
+    def __init__(self, problem, args={}):
         if not hasattr(self, 'name'): # sometimes the name is already defined
             self.name = ""
+        # a few technical parameters
         self.problem = problem
         self.loss = problem.loss
         self.regularizer = problem.regularizer
         self.param = Parameters(problem.data) # can create problem with *reload*
+        # create a bunch of attributes from a dict coming from the config file
+        # e.g. stepsize, flavor_name etc. See config.default
+        for key in args.keys():
+            setattr(self, key, args[key])
+        # initialize what will be used during the run
         self.x = None
         self.epoch_running_time = 0.0
         self.total_running_time = 0.0
@@ -34,15 +40,7 @@ class Solver(metaclass=ABCMeta):
         self.records = {} # { record_name : Record() }
         if self.param.measure_time:
             self.append_records("time_epoch") 
-    """
-    def append_records(self, *tuple_of_class):
-        # tag the Records with the name of the Solver they'll belong to
-        for cls in tuple_of_class:
-            cls.solver_name = self.name
-            cls.data_name = self.problem.data.name
-        update = { cls.name : cls for cls in tuple_of_class }
-        self.records = { **self.records, **update }
-    """
+    
     def append_records(self, *tuple_of_class_name):
         # all the existing records:
         list_records = [ record for record in Records.__subclasses__() if record.__name__[0] != '_' ]
@@ -134,11 +132,4 @@ class Solver(metaclass=ABCMeta):
             record.value_repetition.append(record.value) # carved in stone
             record.value = [] # run is over so we can wipe it
         return
-
-    # Other needed methods
-    def save_records(self):
-        # save the list of lists contained in each Records.value_repetition
-        # or maybe self.records itself?? TBC
-        for record in self.records.values():
-            record.save()
     

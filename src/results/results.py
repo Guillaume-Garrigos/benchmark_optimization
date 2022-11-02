@@ -184,9 +184,9 @@ class Results(Dict2D):
                 xaxis = record.xaxis
             # if the values are >0 we plot with logscale. Otherwise, normal scale
             if values_are_negative:
-                plt.plot(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)   
+                plt.plot(xaxis, record.value_avg, marker, label=record.flavor_name, lw=2)   
             else:             
-                plt.semilogy(xaxis, record.value_avg, marker, label=record.solver_name, lw=2)
+                plt.semilogy(xaxis, record.value_avg, marker, label=record.flavor_name, lw=2)
             if param_plot.show_variance:
                 plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
 

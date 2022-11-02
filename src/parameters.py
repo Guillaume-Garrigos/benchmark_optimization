@@ -22,14 +22,15 @@ def apply_default_solver_parameters(config):
     # output: 
     # - replace each string by a dict of the form { string : {} }
     # - complement each solver parameters with the default ones
+    # - add the flavor_name which by default is the solver name
     lst = config['solvers']
     dict_default_param = config['solvers_parameters']
     for idx, solver in enumerate(lst):
         if isinstance(solver, str):
-            lst[idx] = { solver : dict_default_param }
+            lst[idx] = { solver : { **dict_default_param, 'flavor_name' : solver } }
         if isinstance(solver, dict):
             name_solver = list(solver.keys())[0] # there should be only one key
-            lst[idx] = { name_solver : { **dict_default_param, **solver[name_solver] } }
+            lst[idx] = { name_solver : { **dict_default_param, 'flavor_name' : name_solver, **solver[name_solver] } }
     return config
 
 def get_list_solver_to_run(config):
@@ -53,9 +54,10 @@ class Parameters():
         self.n_repetition = config['solvers_parameters']['nb_repetition']
         self.distribution = config['solvers_parameters']['distribution']
         self.initialization = config['solvers_parameters']['initialization'] # initial point for all algorithms
-        # Options for saving, logging, plotting
+        self.solvers = config['solvers'] # list of dict containing all we need to run each algorithm
         self.solvers_to_run = config['solvers_parameters']['solvers_to_run']
         self.solvers_to_load = config['solvers_parameters']['solvers_to_load']
+        # Options for saving, logging, plotting
         self.measure_time = config['results']['measure_time']
         self.records_to_plot = config['results']['records_to_plot']
         self.do_we_plot = config['results']['do_we_plot'] or config['results']['save_plot']

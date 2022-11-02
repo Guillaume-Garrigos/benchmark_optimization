@@ -13,7 +13,6 @@ results: # parameters about what to do with the experiments
     xp_name: config via yaml # name of the current experiment. Used as a subfolder name
     measure_time: False  # do we measure time elapsed for each epoch? If so, each quantity to be plotted will be plot with respect to both [number of epochs] and [time].
     save_data: True # do we save the results?
-    verbose: True # Should we save the outputs (data and plots)? 1 for yes, 0 for no. Default is 1. CONFLICTS HERE, needs cleaning
     log_file: log.txt # log file name
     
     dpi: 50 # quality of the produced graphs. Strong impact on performance.

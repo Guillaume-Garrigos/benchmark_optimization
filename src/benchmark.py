@@ -8,8 +8,8 @@ from src.problem.problem import Problem
 from src.results.results import Results
 from src.solvers import Solver # this does implicit things in its __init__.py
 
-def get_list_implemented_solvers():
-    return [ algo for algo in Solver.__subclasses__() if algo.__name__[0] != '_' ]
+def get_dict_implemented_solvers():
+    return { Algo.name : Algo  for Algo in Solver.__subclasses__() if Algo.__name__[0] != '_' }
 
 def run_solvers(problem):
     """ given a Problem(), run multiple solvers against it, and return Results() """
@@ -22,17 +22,25 @@ def run_solvers(problem):
     print(f"Running each solver on {problem.data.name}")
     results = Results(problem) # an empty 2D dict, each coefficient will be a Record
     # Get a list of the available solvers. Nasty but at least we do not need to come back here if create a new solver.
-    list_solvers = get_list_implemented_solvers()
+    dict_solvers = get_dict_implemented_solvers()
     # now we run each solver and stack the results
-    for algo in list_solvers:
-        # algo.name accessible as a class variable (even before init)
-        if algo.name in problem.param.solvers_to_run : # we want to run it
-            print(f"Running solver '{algo.name}' on {problem.data.name}")
-            solver = algo(problem) # Instanciate a solver
+    for flavor in problem.param.solvers:
+        # flavor = { algo_name : dict_of_parameters }
+        algo_name = list(flavor.keys())[0]
+        algo_param = flavor[algo_name]
+        flavor_name = algo_param['flavor_name'] # could be different from algo_name if running multiple flavors
+        # sanity check that the name given by the user is implemented
+        if algo_name not in dict_solvers.keys():
+            print(f"Warning: The Solver '{algo_name}' is not implemented. This will be skipped.")
+        else:
+            Algo = dict_solvers[algo_name] # we get the handle on the desired solver
+            print(f"Running solver '{flavor_name}' on the dataset '{problem.data.name}'")
+            solver = Algo(problem, algo_param) # Instanciate a solver with flavoured parameters
             solver.run_repetition() # run the solver with repetitions
-            results.set_records(solver.name, solver.records) # stores all the records from solver.records
+            results.set_records(flavor_name, solver.records) # stores all the records from solver.records
+    # run is over
     # process the values (extracts mean, min, max), make it ready for analysis
-    # and provide each record with an alternate .xaxis_time to plot wrt time
+    # provide each record with an alternate .xaxis_time to plot wrt time (optional)
     print("Process the results")
     results.process_values(problem.param.measure_time)
     # eventually saves each records as a file into the folder defined in config
