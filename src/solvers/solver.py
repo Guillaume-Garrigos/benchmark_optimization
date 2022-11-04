@@ -81,6 +81,9 @@ class Solver(metaclass=ABCMeta):
     # Some of the blocks needed to .run() the Solver
     def initialization_variables(self):
         # standard, can be overwritten if needed in child Solver
+        # default stepsize, computed once. usually 1/smoothness.
+        self.stepsize_default = self.get_stepsize_default()
+        self.stepsize = self.get_stepsize()
         # the initial iterate
         init = self.param.initialization
         if isinstance(init, str):
@@ -134,17 +137,21 @@ class Solver(metaclass=ABCMeta):
             record.value = [] # run is over so we can wipe it
         return
 
-    def get_stepsize_constant(self):
-        return self.stepsize_factor / self.problem.expected_smoothness()
+    def get_stepsize_default(self):
+        return 1.0 / self.problem.expected_smoothness()
 
-    def get_stepsize_vanishing(self):
-        return self.get_stepsize_constant() / ((self.iteration_nb + 1)**self.stepsize_vanishing_exponent)
+    def get_stepsize_constant(self):
+        return self.stepsize_factor * self.stepsize_default
+
+    def get_stepsize_vanishing(self, iteration_nb=0):
+        return self.stepsize_factor * self.stepsize_default / ((iteration_nb + 1)**self.stepsize_vanishing_exponent)
 
     def get_stepsize(self):
         if self.stepsize_type == 'constant':
             return self.get_stepsize_constant()
         elif self.stepsize_type == 'vanishing':
-            return self.get_stepsize_vanishing()
+            # works only if iteration_nb is updated during the run
+            return self.get_stepsize_vanishing(self.iteration_nb)
 
     
     
