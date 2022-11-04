@@ -96,9 +96,10 @@ class Problem():
                 # here self.we_know_solution remains equal to False
                 # this is what should be tested later in the code
             else: # its ok
-                self.optimal_value = f_opt
-                self.optimal_solution = optimum
                 self.we_know_solution = True
+                self.optimal_solution = optimum
+                self.optimal_value = f_opt
+                self.optimal_value_sampled = [self.function_sampled(optimum, i) for i in range(self.nb_data)]
         return
     
     def expected_smoothness(self):
