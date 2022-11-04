@@ -67,8 +67,7 @@ class Parameters():
         # loads the config file into a dict
         config = get_config()
         self.config = config # just in case
-        # parameters for the solvers
-        self.lr = config['solvers_parameters']['lr'] # learning rate / stepsize
+        # parameters for the solvers IS THIS NECESSARY?
         self.nb_epoch = config['solvers_parameters']['nb_epochs']
         self.tol = float(config['solvers_parameters']['tolerance'])
         self.n_repetition = config['solvers_parameters']['nb_repetition']
@@ -114,7 +113,7 @@ class Plot_param():
         self.ylabel = ""
         self.title = f"{self.data_name}" # default
         self.dpi = config['results']['dpi']
-        self.figsize = (9, 6)
+        self.figsize = (18, 12)
         self.fig_folder = parameters.output_folder # the folder output/data/
         self.fig_name = None # for the plots in pdf
         self.fig_path = None # complete path for the pdf plot

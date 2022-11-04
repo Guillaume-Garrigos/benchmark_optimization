@@ -192,7 +192,7 @@ class Results(Dict2D):
 
         # All curves are plotted. Make it look good.
         plt.tick_params(labelsize=20)
-        plt.legend(fontsize=30)
+        plt.legend(fontsize=30, loc='best')
         if param_plot.xlabel != "":
             plt.xlabel(param_plot.xlabel, fontsize=25)
         if param_plot.ylabel != "":
