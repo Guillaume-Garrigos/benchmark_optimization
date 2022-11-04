@@ -6,6 +6,24 @@ from src.solvers import Solver
 # ==================================
 # Baseline methods
 # ==================================
+class SGD(Solver):
+    name = "SGD"
+    def __init__(self, problem, args={}):
+        Solver.__init__(self, problem, args=args)
+        self.append_records("gradient_norm", "function_value", "stepsize")
+
+
+    def run_epoch(self):
+        n = self.problem.nb_data
+        sampling = np.random.randint(low=0, high=n, size=n)  # uniform sampling
+        for i in sampling:
+            grad_i_x = self.problem.gradient_sampled(self.x, i)
+            self.stepsize = self.get_stepsize()
+            x_new = self.x - self.stepsize * grad_i_x
+            self.x = (1-self.extrapolation_parameter)*self.x + self.extrapolation_parameter*x_new
+            self.iteration_nb += 1
+        return
+
 class SAG(Solver):
     """
     Stochastic average gradient algorithm.
@@ -52,36 +70,7 @@ class SAG(Solver):
             self.gradient_memory[i] = grad_i
         return
     
-class SGD(Solver):
 
-    name = "SGD"
-    def __init__(self, problem, args={}):
-        Solver.__init__(self, problem, args=args)
-        self.append_records("gradient_norm", "function_value", "stepsize")
-        self.set_learning_rate()
-        self.lr = self.lr * self.stepsize_factor
-        self.stepsize = self.lr
-
-    def initialization_variables(self):
-        Solver.initialization_variables(self)
-        self.extrapolation_parameter = 1
-
-    def set_learning_rate(self):
-        self.lr = self.param.lr / self.problem.expected_smoothness()
-
-    def run_epoch(self):
-        feature = self.problem.data.feature
-        label = self.problem.data.label
-        reg = self.problem.reg_parameter
-        n = self.problem.nb_data
-        iis = np.random.randint(low=0, high=n, size=n)  # uniform sampling
-        for i in iis:
-            grad_loss = self.loss.prime(label[i], feature[i, :] @ self.x) * feature[i, :] 
-            grad_reg = self.regularizer.prime(self.x)
-            grad = grad_loss + reg * grad_reg
-            xhat = self.x - self.lr * grad
-            self.x = (1-self.extrapolation_parameter)*self.x + self.extrapolation_parameter*xhat
-        return
     
 
 
