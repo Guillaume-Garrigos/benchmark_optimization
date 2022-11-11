@@ -113,7 +113,7 @@ class Solver(metaclass=ABCMeta):
             text += f"| ran in {self.epoch_running_time:f}s "
         for record in self.records.values(): 
             if record.name != "time_epoch": # to avoid doublons
-                text += f"| {record.name} {record.value[-1]:f} "
+                text += f"| {record.name} {record.value[-1]} "
         text += "|"
         logging.info(text)
     
