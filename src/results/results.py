@@ -154,8 +154,8 @@ class Results(Dict2D):
                         print(f"Loaded record for the solver {solver_name} : {record_name}")
         return
 
-    def plot_parallel(self, record_name, xaxis_time = False):
-        """ record_name is the name of some Records() 
+    def plot_parallel(self, record_names, xaxis_time = False):
+        """ record_name is the name of some Records(), eventually a list of names
             We assume that our Result contains that Records() for one or many Solver()
 
             We are going to plot the curves of this quantity for each solver.
@@ -163,32 +163,27 @@ class Results(Dict2D):
             The parameters of the plot are in Records.plot
             See Plot_param() for the default values.
         """
-        # Get a list of Records() corresponding to all the Solvers() recording record_name
-        record_list = self.extract_list_given_record(record_name)
+        # set parameters
+        if isinstance(record_names, str):
+            record_names = [record_names]
+        param_plot = self.param.plot
         # first setup of the figure
         plt.rc('text', usetex=True)
         plt.rc('text.latex', preamble=r'\usepackage{underscore}')
         plt.rc('font', family='sans-serif')
-        param_plot = record_list[0].param.plot # all these Records should have the same figsize/dpi parameters
+        #param_plot = record_list[0].param.plot # all these Records should have the same figsize/dpi parameters
+        # create the canvas
         plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
-        # loop over the algorithms (each will have different marker)
-        markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
-        values_are_negative = any([any(record.value_avg<0) for record in record_list])
-        for record, marker in zip(record_list, markers):
-            param_plot = record.param.plot # each of those have different legend name
-            # plot
-            if xaxis_time:
-                xaxis = record.xaxis_time
-                param_plot.xlabel = "Time (s)"
-            else:
-                xaxis = record.xaxis
-            # if the values are >0 we plot with logscale. Otherwise, normal scale
-            if values_are_negative:
-                plt.plot(xaxis, record.value_avg, marker, label=record.flavor_name, lw=2)   
-            else:             
-                plt.semilogy(xaxis, record.value_avg, marker, label=record.flavor_name, lw=2)
-            if param_plot.show_variance:
-                plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
+
+        # loop over possible records to plot
+        for record_name in record_names:
+            # Get a list of Records() corresponding to all the Solvers() recording record_name
+            record_list = self.extract_list_given_record(record_name)
+            # add curves to the canvas
+            label_append = ""
+            if len(record_names) > 1:
+                label_append += ':' + record_name
+            self.plot_curves_given_record(record_list, xaxis_time=xaxis_time, label_append=label_append)
 
         # All curves are plotted. Make it look good.
         plt.tick_params(labelsize=20)
@@ -201,22 +196,50 @@ class Results(Dict2D):
         if param_plot.title is not None:
             plt.title(param_plot.title, fontsize=25)
         if param_plot.save_plot:
+            fig_name = "_vs_".join(record_names)
+            fig_path = os.path.join(param_plot.fig_folder, fig_name)
             if xaxis_time:
-                fig_path = param_plot.fig_path + '-time'
-            else:
-                fig_path = param_plot.fig_path
+                fig_path = fig_path + '-time'
             plt.savefig(fig_path+'.pdf', bbox_inches='tight', pad_inches=0.01)
-        else: # no save, just plot it
+        if param_plot.do_we_plot:
             plt.show()
         return
 
+    def plot_curves_given_record(self, record_list, **args):
+        # loop over the algorithms (each will have different marker)
+        markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
+        values_are_negative = any([any(record.value_avg<0) for record in record_list])
+        for record, marker in zip(record_list, markers):
+            param_plot = record.param.plot # each of those have different legend name
+            # plot
+            if args['xaxis_time']:
+                xaxis = record.xaxis_time
+                param_plot.xlabel = "Time (s)"
+            else:
+                xaxis = record.xaxis
+            # if the values are >0 we plot with logscale. Otherwise, normal scale
+            label = record.flavor_name + args['label_append']
+            if values_are_negative:
+                plt.plot(xaxis, record.value_avg, marker, label=label, lw=2)   
+            else:             
+                plt.semilogy(xaxis, record.value_avg, marker, label=label, lw=2)
+            # eventually show variance (for repetitions)
+            if param_plot.show_variance:
+                plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
+
     def plot_all(self, xaxis_time=False):
-        for record_name in self.ykeys():
-            if record_name in self.param.records_to_plot:
-            #if record_name != "time_epoch": # we don't want to plot that. Could use a blacklist if need to generalize
+        for record_name in self.param.records_to_plot:
+            # here we simply plot this record, for every solver it is related to
+            if record_name in self.ykeys(): # safecheck
                 print(f"Start plotting the results for {record_name}")
                 self.plot_parallel(record_name)
                 if xaxis_time: # second pass for the plots wrt time
-                    self.plot_parallel(record_name, xaxis_time = True) 
+                    self.plot_parallel(record_name, xaxis_time = True)
+        for comparison in self.param.config['results']['records_to_compare']:
+            # comparison is a list of Record names
+            # we'll now plot different records on the same plot, for every solver
+            if all( record_name in self.ykeys() for record_name in comparison ): # safecheck
+                print(f"Start plotting the compared results for: {comparison}")
+                self.plot_parallel(comparison)
 
 

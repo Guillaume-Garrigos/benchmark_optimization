@@ -13,6 +13,7 @@ def get_config():
     config = apply_default_solver_parameters(config) # decide which parameter to apply per solver
     config['solvers_parameters']['solvers_to_run'] = get_list_solver_to_run(config)
     config['solvers_parameters']['solvers_to_load'] = get_list_solver_to_load(config)
+    config['results']['records_to_plot'] = get_list_record_to_plot(config)
     config['results']['records_to_record'] = get_list_record_to_record(config)
     return config
 
@@ -61,12 +62,20 @@ def get_list_solver_to_run(config):
 def get_list_solver_to_load(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' in solver[key] and solver[key]['load']]
 
+def get_list_record_to_plot(config):
+    if 'records_to_plot' in config['results'].keys() and config['results']['records_to_plot'] is not None:
+        return config['results']['records_to_plot']
+    else:
+        return []
+
 def get_list_record_to_record(config):
     list_of_records = copy.deepcopy(config['results']['records_to_plot'])
     if 'records_to_compare' in config['results'].keys():
         for comparison in config['results']['records_to_compare']:
             for record_name in comparison:
                 list_of_records.append(record_name)
+    else: # we set it to emptylist so we are not annoyed anymore later
+        config['results']['records_to_compare'] = []
     if config['results']['measure_time']: # special
         list_of_records.append("time_epoch")
     return list(set(list_of_records)) # remove duplicates
@@ -89,10 +98,10 @@ class Parameters():
         self.solvers = config['solvers'] # list of dict containing all we need to run each algorithm
         self.solvers_to_run = config['solvers_parameters']['solvers_to_run']
         self.solvers_to_load = config['solvers_parameters']['solvers_to_load']
+        self.records_to_plot = config['results']['records_to_plot']
         self.records_to_record = config['results']['records_to_record']
         # Options for saving, logging, plotting
         self.measure_time = config['results']['measure_time']
-        self.records_to_plot = config['results']['records_to_plot']
         self.do_we_plot = config['results']['do_we_plot'] or config['results']['save_plot']
         self.save_data = config['results']['save_data']
         self.save_plot = config['results']['save_plot']

@@ -121,7 +121,14 @@ class Solver(metaclass=ABCMeta):
         logging.info(text)
     
     def we_have_to_break(self):
-        return self.param.tol is not None and self.records["gradient_norm"].value[-1] <= self.param.tol
+        if self.param.tol is None:
+            return False
+        else: # tolerance parameter is defined
+            if "gradient_norm" in self.records.keys(): # we have a measure of gradient norms
+                return self.records["gradient_norm"].value[-1] <= self.param.tol
+            else:
+                return False
+        #return self.param.tol is not None and self.records["gradient_norm"].value[-1] <= self.param.tol
 
     # An upper function running a solver multiple times
     def run_repetition(self):
