@@ -57,6 +57,8 @@ class Problem():
                 self.reg_parameter = 1./np.sqrt(self.nb_data)
         logging.info("Regularization param: {}".format(self.reg_parameter))
         # handy handles
+        # annoying that functions evaluated at one point return not a float but a [float]
+        # this is bc of the reshape. I think I do that to be able to compute function value on many vactors at once, but why? can't remember
         self.function_sampled = lambda x, i: self.loss.val(self.data.label[i], self.data.feature[i, :] @ x) + self.reg_parameter * self.regularizer.val(x)
         self.gradient_sampled = lambda x, i: self.loss.prime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :] + self.reg_parameter * self.regularizer.prime(x)
         self.hessian_sampled = lambda x, i: self.loss.dprime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :].reshape((-1,1)) @ self.data.feature[i, :].reshape((1,-1)) + self.reg_parameter * self.regularizer.dprime(x)
