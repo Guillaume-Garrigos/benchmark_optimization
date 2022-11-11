@@ -17,22 +17,10 @@ class Records():
         self.param = copy.deepcopy(solver.param) # we need a copy here otherwise record_name will change everytime. We could have been smarter but so far doesn't seem to explode memory
         self.param.plot.set_record_name(name)
         self.do_we_save = solver.problem.param.do_we_save
-
-    def get_value(self, solver):
-        # to be defined for each specific instance of Records
-        return None
     
     def store(self, solver): 
         # given a solver at a certain state, we compute some quantity and append it to Records.value
-        # we really want it to be a float so we can plot it later
-        value = self.get_value(solver)
-        if value is not None:
-            try:
-                value = float(value)
-            except:
-                print(f"The Record {self.name} for the Solver {solver.name} should be a real number but I was given : {value}")
-                raise
-            self.value.append(value)
+        pass
 
     def parent_solver(self, solver):
         self.solver_name = solver.name
