@@ -1,6 +1,7 @@
 import os
 import time
 import yaml
+import copy
 
 def get_config():
     # gets the config 
@@ -61,7 +62,7 @@ def get_list_solver_to_load(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' in solver[key] and solver[key]['load']]
 
 def get_list_record_to_record(config):
-    list_of_records = config['results']['records_to_plot']
+    list_of_records = copy.deepcopy(config['results']['records_to_plot'])
     if 'records_to_compare' in config['results'].keys():
         for comparison in config['results']['records_to_compare']:
             for record_name in comparison:
