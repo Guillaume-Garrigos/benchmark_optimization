@@ -6,12 +6,13 @@ def get_config():
     # gets the config 
     path = 'config.yml'
     with open(path, 'r') as stream:
-        config = yaml.safe_load(stream)
-    config = merge_default_param(config)
+        config = yaml.safe_load(stream) # we get a dict from the file
+    config = merge_default_param(config) # apply the hardwritten default parameters if needed
     # does some cleaning on the solvers parameters
-    config = apply_default_solver_parameters(config)
+    config = apply_default_solver_parameters(config) # decide which parameter to apply per solver
     config['solvers_parameters']['solvers_to_run'] = get_list_solver_to_run(config)
     config['solvers_parameters']['solvers_to_load'] = get_list_solver_to_load(config)
+    config['results']['records_to_record'] = get_list_record_to_record(config)
     return config
 
 def merge_default_param(config):
@@ -59,6 +60,17 @@ def get_list_solver_to_run(config):
 def get_list_solver_to_load(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' in solver[key] and solver[key]['load']]
 
+def get_list_record_to_record(config):
+    list_of_records = config['results']['records_to_plot']
+    if 'records_to_compare' in config['results'].keys():
+        for comparison in config['results']['records_to_compare']:
+            for record_name in comparison:
+                list_of_records.append(record_name)
+    if config['results']['measure_time']: # special
+        list_of_records.append("time_epoch")
+    return list(set(list_of_records)) # remove duplicates
+
+
 
 ##################################################
 class Parameters():
@@ -76,6 +88,7 @@ class Parameters():
         self.solvers = config['solvers'] # list of dict containing all we need to run each algorithm
         self.solvers_to_run = config['solvers_parameters']['solvers_to_run']
         self.solvers_to_load = config['solvers_parameters']['solvers_to_load']
+        self.records_to_record = config['results']['records_to_record']
         # Options for saving, logging, plotting
         self.measure_time = config['results']['measure_time']
         self.records_to_plot = config['results']['records_to_plot']

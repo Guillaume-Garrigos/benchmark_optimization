@@ -34,7 +34,7 @@ def run_solvers(problem):
             print(f"Warning: The Solver '{algo_name}' is not implemented. This will be skipped.")
         else:
             Algo = dict_solvers[algo_name] # we get the handle on the desired solver
-            print(f"Running solver '{flavor_name}' on the dataset '{problem.data.name}'")
+            print(f"Running solver '{algo_name}' with flavor '{flavor_name}' on the dataset '{problem.data.name}'")
             solver = Algo(problem, algo_param) # Instanciate a solver with flavoured parameters
             solver.run_repetition() # run the solver with repetitions
             results.set_records(flavor_name, solver.records) # stores all the records from solver.records

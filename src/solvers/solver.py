@@ -43,16 +43,19 @@ class Solver(metaclass=ABCMeta):
             self.append_records("time_epoch") 
     
     def append_records(self, *tuple_of_class_name):
-        # all the existing records:
+        # this is usually used at the definition of a specific solver to precise which record make sense for that solver
+        # first harvest all the existing records for all possible solvers:
         list_records = [ record for record in Records.__subclasses__() if record.__name__[0] != '_' ]
         dict_of_records = {}
         # tag the Records with the name of the Solver they'll belong to
         for cls in list_records:
-            if cls.name in tuple_of_class_name: # we want this Record for this Solver
-                record_instance = cls(self)
-                record_instance.solver_name = self.name
-                record_instance.data_name = self.problem.data.name
-                dict_of_records = { **dict_of_records, cls.name : record_instance }
+            # cls.name is the name of a record.
+            if cls.name in tuple_of_class_name: # we allow this Record for this Solver
+                if cls.name in self.param.records_to_record: # we want it
+                    record_instance = cls(self)
+                    record_instance.solver_name = self.name
+                    record_instance.data_name = self.problem.data.name
+                    dict_of_records = { **dict_of_records, cls.name : record_instance }
         self.records = { **self.records, **dict_of_records }
 
     # Runs the Solver. It calls a handful of subroutines, defined after
