@@ -12,7 +12,6 @@ class SGD(Solver):
         Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value", "stepsize")
 
-
     def run_epoch(self):
         n = self.problem.nb_data
         sampling = np.random.randint(low=0, high=n, size=n)  # uniform sampling
@@ -21,7 +20,7 @@ class SGD(Solver):
             self.stepsize = self.get_stepsize()
             x_new = self.x - self.stepsize * grad_i_x
             self.x = (1-self.extrapolation_parameter)*self.x + self.extrapolation_parameter*x_new
-            self.iteration_nb += 1
+            self.increment_iteration()
         return
 
 class SAG(Solver):
@@ -33,7 +32,6 @@ class SAG(Solver):
     def __init__(self, problem, args={}):
         Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
-        self.set_learning_rate()
         # Old gradients
         self.gradient_memory = None
         self.y = None
@@ -43,31 +41,21 @@ class SAG(Solver):
         n, d = self.problem.nb_data, self.problem.dim
         self.gradient_memory = np.zeros((n, d))
         self.y = np.zeros(d)
+        self.stepsize = self.get_stepsize()
         return
 
-    def set_learning_rate(self):
-        if self.problem.loss_name == "L2":
-            self.lr = self.param.lr / utils.max_Li_ridge(self.problem.data.feature, self.problem.reg_parameter)
-        elif self.problem.loss_name == "Logistic":
-            self.lr = self.param.lr / utils.max_Li_logistic(self.problem.data.feature, self.problem.reg_parameter)
-        else:
-            print("Warning!!!")
-            self.lr = 0.01
-
     def run_epoch(self):
-        feature = self.problem.data.feature
-        label = self.problem.data.label
-        reg = self.problem.reg_parameter
         n = self.problem.nb_data
-        iis = np.random.randint(low=0, high=n, size=n)
-        for i in iis:
+        sampling = np.random.randint(low=0, high=n, size=n)
+        for i in sampling:
+            self.stepsize = self.get_stepsize()
             # gradient of i-th loss
-            grad_i = self.loss.prime(label[i], feature[i, :] @ self.x) * feature[i, :] \
-                     + reg * self.regularizer.prime(self.x)
+            grad_i_x = self.problem.gradient_sampled(self.x, i)
             # update
-            self.y += grad_i - self.gradient_memory[i]
-            self.x -= self.lr * self.y / n
-            self.gradient_memory[i] = grad_i
+            self.y += grad_i_x - self.gradient_memory[i]
+            self.x = self.x - self.stepsize * self.y / n
+            self.gradient_memory[i] = grad_i_x
+            self.increment_iteration()
         return
     
 
@@ -91,54 +79,39 @@ class SVRG(Solver):
     def __init__(self, problem, args={}):
         Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
-        self.set_learning_rate()
         self.x_ref = None
         self.grad_ref = None
         self.do_inner_loop = False
-
+    
     def initialization_variables(self):
         Solver.initialization_variables(self)
+        self.stepsize = self.get_stepsize()
 
-    def set_learning_rate(self):
-        if self.problem.loss_name == "L2":
-            self.lr = self.param.lr / utils.max_Li_ridge(self.problem.data.feature, self.problem.reg_parameter)
-        elif self.problem.loss_name == "Logistic":
-            self.lr = self.param.lr / utils.max_Li_logistic(self.problem.data.feature, self.problem.reg_parameter)
-        else:
-            print("Warning!!!")
-            self.lr = 0.01
-
-    def _full_pass(self):
-        feature = self.problem.data.feature
-        label = self.problem.data.label
-        reg = self.problem.reg_parameter
+    def run_full_pass(self):
         self.x_ref = self.x.copy()
-        self.grad_ref = np.mean(self.loss.prime(label, feature @ self.x).reshape(-1, 1) * feature, axis=0) + \
-                        reg * self.regularizer.prime(self.x)
-        self.x -= self.lr * self.grad_ref
+        self.grad_ref = self.problem.gradient(self.x)
+        self.x = self.x - self.stepsize * self.grad_ref
+        self.increment_iteration()
         return
 
-    def _inner_loop(self):
-        feature = self.problem.data.feature
-        label = self.problem.data.label
-        reg = self.problem.reg_parameter
+    def run_inner_loop(self):
         n = self.problem.nb_data
         iis = np.random.randint(low=0, high=n, size=n)
         for i in iis:
-            grad_i = self.loss.prime(label[i], feature[i, :] @ self.x) * feature[i, :] \
-                     + reg * self.regularizer.prime(self.x)
-            grad_i_ref = self.loss.prime(label[i], feature[i, :] @ self.x_ref) * feature[i, :] \
-                         + reg * self.regularizer.prime(self.x_ref)
-            d_i = grad_i - grad_i_ref + self.grad_ref
-            self.x -= self.lr * d_i
+            self.stepsize = self.get_stepsize()
+            grad_i_x = self.problem.gradient_sampled(self.x, i)
+            grad_i_xref = self.problem.gradient_sampled(self.x_ref, i)
+            d_i = grad_i_x - grad_i_xref + self.grad_ref
+            self.x = self.x - self.stepsize * d_i
+            self.increment_iteration()
         return
 
     def run_epoch(self):
         if self.do_inner_loop:
-            self._inner_loop()
+            self.run_inner_loop()
             self.do_inner_loop = False
         else:
-            self._full_pass()
+            self.run_full_pass()
             self.do_inner_loop = True
         return
 
@@ -149,7 +122,7 @@ class Adam(Solver):
     def __init__(self, problem, args={}):
         Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
-        self.lr = 0.001
+        self.stepsize = 0.001
         self.beta1 = 0.9
         self.beta2 = 0.999
         self.eps = 1e-8
@@ -165,21 +138,17 @@ class Adam(Solver):
         return
 
     def run_epoch(self):
-        feature = self.problem.data.feature
-        label = self.problem.data.label
-        reg = self.problem.reg_parameter
         n = self.problem.nb_data
         iis = np.random.randint(low=0, high=n, size=n)
         for i in iis:
             self.update_cnt += 1
-            grad_i = self.loss.prime(label[i], feature[i, :] @ self.x) * feature[i, :] \
-                     + reg * self.regularizer.prime(self.x)
-            self.m = self.beta1 * self.m + (1 - self.beta1) * grad_i
-            self.v = self.beta2 * self.v + (1 - self.beta2) * (grad_i * grad_i)
+            grad_i_x = self.problem.gradient_sampled(self.x, i)
+            self.m = self.beta1 * self.m + (1 - self.beta1) * grad_i_x
+            self.v = self.beta2 * self.v + (1 - self.beta2) * (grad_i_x * grad_i_x)
             m_hat = self.m / (1 - self.beta1 ** self.update_cnt)
             v_hat = self.v / (1 - self.beta2 ** self.update_cnt)
-            direction = self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
-            self.x -= direction  # update
+            direction = m_hat / (np.sqrt(v_hat) + self.eps)
+            self.x = self.x - self.stepsize * direction  # update
         return
 
 
@@ -192,29 +161,17 @@ class GD(Solver):
     def __init__(self, problem, args={}):
         Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
-        self.set_learning_rate()
 
     def initialization_variables(self):
         Solver.initialization_variables(self)
-
-    def set_learning_rate(self):
-        if self.problem.loss_name == "L2" and self.problem.regularizer_name == 'L2':
-            self.lr = self.param.lr / utils.lipschitz_ridge(self.problem.data.feature, self.problem.reg_parameter)
-        elif self.problem.loss_name == "Logistic" and self.problem.regularizer_name == 'L2':
-            self.lr = self.param.lr / utils.lipschitz_logistic(self.problem.data.feature, self.problem.reg_parameter)
-        else:
-            print("Warning!!! GD learning rate")
-            self.lr = 0.01
+        self.stepsize = self.get_stepsize()
 
     def run_epoch(self):
-        feature = self.problem.data.feature
-        label = self.problem.data.label
-        reg = self.problem.reg_parameter
-        grad = np.mean(self.loss.prime(label, feature @ self.x).reshape(-1, 1) * feature, axis=0) \
-               + reg * self.regularizer.prime(self.x)
-        self.x -= self.lr * grad
+        self.stepsize = self.get_stepsize()
+        grad_x = self.problem.gradient(self.x)
+        self.x = self.x - self.stepsize * grad_x
+        self.increment_iteration()
         return
-
 
 class Newton(Solver):
 
@@ -222,7 +179,7 @@ class Newton(Solver):
     def __init__(self, problem, args={}):
         Solver.__init__(self, problem, args=args)
         self.append_records("gradient_norm", "function_value")
-        self.lr = 1.0
+        self.stepsize = 1.0
 
     def initialization_variables(self):
         Solver.initialization_variables(self)
@@ -232,9 +189,8 @@ class Newton(Solver):
         label = self.problem.data.label
         reg = self.problem.reg_parameter
         n = self.problem.nb_data
-        grad = np.mean(self.loss.prime(label, feature @ self.x).reshape(-1, 1) * feature, axis=0) \
-               + reg * self.regularizer.prime(self.x)
+        grad_x = self.problem.gradient(self.x)
         h = np.sqrt(self.loss.dprime(label, feature @ self.x)).reshape(-1, 1) * feature
-        hess = reg * np.diag(self.regularizer.dprime(self.x)) + (h.T @ h) / n
-        self.x -= self.lr * np.linalg.solve(hess, grad)
+        hess = reg * (self.regularizer.dprime(self.x)) + (h.T @ h) / n
+        self.x -= self.stepsize * np.linalg.solve(hess, grad_x)
         return
