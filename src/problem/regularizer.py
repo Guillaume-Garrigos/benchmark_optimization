@@ -12,7 +12,7 @@ class L2:
 
     @staticmethod
     def dprime(x):
-        return np.ones_like(x)
+        return np.diag(np.ones_like(x))
 
 
 class PseudoHuber:
@@ -26,4 +26,4 @@ class PseudoHuber:
         return x / np.sqrt(1. + (x / self.delta) ** 2)
 
     def dprime(self, x):
-        return np.power((1. + (x / self.delta) ** 2), -1.5)
+        return np.diag(np.power((1. + (x / self.delta) ** 2), -1.5))
