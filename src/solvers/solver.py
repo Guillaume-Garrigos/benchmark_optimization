@@ -163,5 +163,8 @@ class Solver(metaclass=ABCMeta):
             # works only if iteration_nb is updated during the run
             return self.get_stepsize_vanishing(self.iteration_nb)
 
+    def increment_iteration(self):
+        self.iteration_nb = self.iteration_nb + 1
+
     
     
