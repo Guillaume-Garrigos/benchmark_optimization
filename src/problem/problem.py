@@ -56,15 +56,16 @@ class Problem():
             if config['problem']['reg_parameter'] == "inv_sqrt_data":
                 self.reg_parameter = 1./np.sqrt(self.nb_data)
         logging.info("Regularization param: {}".format(self.reg_parameter))
-        # handy handles
+        
+        # solution of the problem
+        self.we_know_solution = False
+        if config['results']['subopt']:
+            self.solve()
+
+    # Nice handles 
+    # handy handles
         # annoying that functions evaluated at one point return not a float but a [float]
         # this is bc of the reshape. I think I do that to be able to compute function value on many vactors at once, but why? can't remember
-        self.function_sampled = lambda x, i: self.loss.val(self.data.label[i], self.data.feature[i, :] @ x) + self.reg_parameter * self.regularizer.val(x)
-        self.gradient_sampled = lambda x, i: self.loss.prime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :] + self.reg_parameter * self.regularizer.prime(x)
-        self.hessian_sampled = lambda x, i: self.loss.dprime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :].reshape((-1,1)) @ self.data.feature[i, :].reshape((1,-1)) + self.reg_parameter * self.regularizer.dprime(x)
-        self.function = lambda x: np.mean(self.loss.val(self.data.label, self.data.feature @ x).reshape(-1, 1).flatten(), axis=0) + self.reg_parameter * self.regularizer.val(x)
-        self.gradient = lambda x: np.mean(self.loss.prime(self.data.label, self.data.feature @ x).reshape(-1, 1) * self.data.feature, axis=0) + self.reg_parameter * self.regularizer.prime(x)
-        self.hessian = lambda x: self.data.feature.T @ ( self.loss.dprime(self.data.label, self.data.feature @ x).reshape(-1, 1) * self.data.feature )/self.nb_data + self.reg_parameter * self.regularizer.dprime(x)
         # tried to be efficient above, I hope it works. 
         # Basically using sum_i u_i u_i.T = U.T U where U=rows(u_i.T)
         """ The above could be easily modified if we want to work with autodiff
@@ -72,11 +73,24 @@ class Problem():
             The switch between one kind of problem or the other should be handled 
             at the init of Problem(), certainly with some optional parameter
         """
-        # solution of the problem
-        self.we_know_solution = False
-        if config['results']['subopt']:
-            self.solve()
-
+    def function_sampled(self, x, i): 
+        return self.loss.val(self.data.label[i], self.data.feature[i, :] @ x) + self.reg_parameter * self.regularizer.val(x)
+    def gradient_sampled(self, x, i): 
+        return self.loss.prime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :] + self.reg_parameter * self.regularizer.prime(x)
+    def hessian_sampled(self, x, i): 
+        return self.loss.dprime(self.data.label[i], self.data.feature[i, :] @ x) * self.data.feature[i, :].reshape((-1,1)) @ self.data.feature[i, :].reshape((1,-1)) + self.reg_parameter * self.regularizer.dprime(x)
+    def function(self, x): 
+        return np.mean(self.loss.val(self.data.label, self.data.feature @ x).reshape(-1, 1).flatten(), axis=0) + self.reg_parameter * self.regularizer.val(x)
+    def gradient(self, x): 
+        return self.data.feature.T @ self.loss.prime(self.data.label, self.data.feature @ x) / self.nb_data + self.reg_parameter * self.regularizer.prime(x)
+    def hessian(self, x):
+        # Hessian at x is : 
+        # (1/n) * Phi.T @ Diag(loss'') @ Phi
+        # we write it as (1/n) h.T @ h with h = Diag(sqrt(loss'')) @ Phi
+        # and use the fact that Diag(v) @ A = v * A in python
+        h = np.sqrt(self.loss.dprime(self.data.label, self.data.feature @ x)).reshape(-1, 1) * self.data.feature
+        return (h.T @ h)/self.nb_data + self.reg_parameter * self.regularizer.dprime(x)
+        
 
     def solve(self):
         # try to obtain the optimum by using l-bfgs method
