@@ -176,25 +176,37 @@ class Results(Dict2D):
         plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
 
         # loop over possible records to plot
+        there_is_mixed_records = len(record_names) > 1
         for record_name in record_names:
             # Get a list of Records() corresponding to all the Solvers() recording record_name
             record_list = self.extract_list_given_record(record_name)
             # add curves to the canvas
             label_append = ""
-            if len(record_names) > 1:
-                label_append += ':' + record_name
+            if there_is_mixed_records:
+                param_plot.xlabel = record_list[0].param.plot.xlabel
+                param_plot.ylabel = "" # we don't want to mix the ylabels for different records
+                label_append += ':' + record_name # instead we display it in the legend
             self.plot_curves_given_record(record_list, xaxis_time=xaxis_time, label_append=label_append)
 
         # All curves are plotted. Make it look good.
         plt.tick_params(labelsize=20)
         plt.legend(fontsize=30, loc='best')
-        if param_plot.xlabel != "":
-            plt.xlabel(param_plot.xlabel, fontsize=25)
-        if param_plot.ylabel != "":
-            plt.ylabel(param_plot.ylabel, fontsize=25)
-        plt.grid(True)
         if param_plot.title is not None:
             plt.title(param_plot.title, fontsize=25)
+        plt.grid(True)
+        # set the labels for axis
+        if xaxis_time:
+            xlabel = "Time (s)"
+        else:
+            xlabel = "Effective Passes"
+        if there_is_mixed_records: # we don't display yaxis
+            ylabel = "" 
+        else: # get the Record from the unique record name and extract the ylabel
+            ylabel = self.extract_list_given_record(record_names[0])[0].param.plot.ylabel
+        plt.xlabel(xlabel, fontsize=25)
+        plt.ylabel(ylabel, fontsize=25)
+        
+        # finally, show/save the figures
         if param_plot.save_plot:
             fig_name = "_vs_".join(record_names)
             fig_path = os.path.join(param_plot.fig_folder, fig_name)
@@ -211,7 +223,7 @@ class Results(Dict2D):
         values_are_negative = any([any(record.value_avg<0) for record in record_list])
         for record, marker in zip(record_list, markers):
             param_plot = record.param.plot # each of those have different legend name
-            # plot
+            # set the xaxis
             if args['xaxis_time']:
                 xaxis = record.xaxis_time
                 param_plot.xlabel = "Time (s)"
