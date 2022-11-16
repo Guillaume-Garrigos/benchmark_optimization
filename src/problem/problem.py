@@ -40,6 +40,8 @@ class Problem():
             self.loss = loss.PseudoHuberLoss(delta=1.0)
         elif self.loss_name == "Logistic":
             self.loss = loss.LogisticLoss()
+        elif self.loss_name == "PhaseRetrieval":
+            self.loss = loss.PhaseRetrieval()
         else:
             raise Exception("Unknown loss function!")
         # regularizer

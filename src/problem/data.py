@@ -123,4 +123,30 @@ def simu_logreg(x, n, std=1., corr=0.5):
     """
     A, b = simu_linreg(x, n, std=1., corr=corr)
     return A, np.sign(b)
+
+def simu_phase_retrieval(x, n, std=0.):
+    """Simulation for phase retrieval problem.
+
+    Parameters
+    ----------
+    x : ndarray, shape (d,)
+        The coefficients of the model
+    n : int
+        Sample size
+
+    Returns
+    -------
+    A : ndarray, shape (n, d)
+        The design matrix.
+    b : ndarray, shape (n,)
+        The targets.
+    std : float, default=1.
+        Standard-deviation of the noise
+    """
+    d = x.shape[0]
+    A = randn(n, d)
+    noise = std* randn(n)
+    b = (A.dot(x))**2 + noise
+    return A, b
+
 # ======================================
