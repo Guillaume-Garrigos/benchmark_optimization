@@ -220,7 +220,7 @@ class Results(Dict2D):
     def plot_curves_given_record(self, record_list, **args):
         # loop over the algorithms (each will have different marker)
         markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
-        values_are_negative = any([any(record.value_avg<0) for record in record_list])
+        values_are_negative = any([any(record.value_avg<=0.0) for record in record_list])
         for record, marker in zip(record_list, markers):
             param_plot = record.param.plot # each of those have different legend name
             # set the xaxis
