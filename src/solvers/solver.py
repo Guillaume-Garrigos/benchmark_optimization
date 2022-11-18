@@ -92,7 +92,9 @@ class Solver(metaclass=ABCMeta):
         if isinstance(init, str):
             if init == "zeros":
                 self.x = np.zeros(self.problem.dim)
-            # we could do "random" as well but need to be careful with seed
+            if init == "random":
+                self.x = np.random.randn(self.problem.dim)
+            # we need to be careful with seed TODO!!!
         else: # we assume it is a np.array
             self.x = init
         # the measure of time
@@ -121,7 +123,7 @@ class Solver(metaclass=ABCMeta):
         logging.info(text)
     
     def we_have_to_break(self):
-        if self.param.tol is None:
+        if self.param.tol == 0.0:
             return False
         else: # tolerance parameter is defined
             if "gradient_norm" in self.records.keys(): # we have a measure of gradient norms
