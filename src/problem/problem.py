@@ -125,6 +125,8 @@ class Problem():
             return utils.max_Li_ridge(self.data.feature, self.reg_parameter)
         elif self.loss_name == "Logistic":
             return utils.max_Li_logistic(self.data.feature, self.reg_parameter)
+        elif self.loss_name == "PhaseRetrieval":
+            return 1.0
         else:
             print(f"Warning: The loss {self.loss_name} is unknown. The expected smoothness constant couldn't be defined")
             return 1.0
