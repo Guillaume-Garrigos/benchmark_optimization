@@ -46,3 +46,14 @@ class PseudoHuberLoss:
     def dprime(self, y, y_hat):
         diff = y_hat - y
         return np.power((1. + (diff / self.delta) ** 2), -1.5)
+
+
+class PhaseRetrieval:
+    def __init__(self):
+        pass
+    def val(self, y, y_hat):
+        return np.abs(y_hat**2-y)
+    def prime(self, y, y_hat):
+        return 2*y_hat*np.sign(y_hat**2 - y)
+    
+        
