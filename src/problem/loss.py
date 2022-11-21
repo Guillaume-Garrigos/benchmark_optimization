@@ -59,3 +59,11 @@ class PhaseRetrieval:
         return 2*np.sign(y_hat**2 - y**2)
     
         
+class HingeLoss:
+    def __init__(self):
+        pass
+    def val(self, y, y_hat):
+        return max(0, 1-y*y_hat)
+    def prime(self, y, y_hat):
+        return -y * (1-y*y_hat >= 0)
+        
