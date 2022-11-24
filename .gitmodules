@@ -1,3 +1,6 @@
 [submodule "src/solvers/adaptive_polyak_methods"]
 	path = src/solvers/adaptive_polyak_methods
 	url = https://github.com/Guillaume-Garrigos/adaptive_polyak_methods
+[submodule "src/solvers/stochastic_adaptive_newton"]
+	path = src/solvers/stochastic_adaptive_newton
+	url = https://github.com/Guillaume-Garrigos/stochastic_adaptive_newton.git
