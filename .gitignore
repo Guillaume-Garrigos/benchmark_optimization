@@ -133,6 +133,7 @@ dmypy.json
 .gitignore
 notebook/*
 datasets/*
+!datasets/dummy.txt
 results/*
 output/*
 __pycache__*

@@ -9,37 +9,36 @@ problem:
     dataset_path_folder: datasets
     
 results: 
-    output_path: output
-    xp_name: config via yaml
+    output_path: output/my first batch of experiments
+    xp_name: my first xp
     measure_time: False
     save_data: True
+    save_plot: True
+    do_we_plot: True
     verbose: True
     log_file: log.txt
     
     dpi: 50
     plot_threshold: 1.0e-12
     subopt: True
-    records_to_plot:
+    records_to_plot: # list of Records names
         - gradient_norm
-    
+        - function_value
+
 solvers_parameters: # general parameters applied to all solvers. can be overwritten by specific solver parameters below
-    nb_repetition: 2
+    nb_repetition: 3
     nb_epochs: 100
-    stepsize_factor: 0.5
-    tolerance: 1e-8
+    tolerance: 1e-10
     initialization: zeros
     distribution: uniform
-    lr: 1.0
+    stepsize_type: vanishing
+    stepsize_factor: 1.0
+    stepsize_vanishing_exponent: 0.5
     
-solvers: # list of solvers and their specific parameters. can have duplicates but name_result must differ
-    - SAN:
-        name_result: SAN_constant
-        stepsize_factor: 1.5
-        stepsize_type: constant
-    - SAN:
-        name_result: SAN_vanishing
-        stepsize_factor: 1.5
-        stepsize_type: vanishing
-        stepsize_vanishing_exponent: 0.5
+# list of solvers and their specific parameters. can have duplicates but name_result must differ
+solvers: 
+    - GD
     - SGD
+        
+
     
