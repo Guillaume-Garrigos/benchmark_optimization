@@ -56,6 +56,6 @@ class PhaseRetrieval:
     def prime(self, y, y_hat):
         return 2*y_hat*np.sign(y_hat**2 - y**2)
     def dprime(self, y, y_hat):
-        return 2*np.sign(y_hat**2 - y**2)
+        return 2*np.sign(y_hat**2 - y**2) 
     
         
