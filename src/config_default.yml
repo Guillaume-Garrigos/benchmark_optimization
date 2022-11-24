@@ -23,15 +23,15 @@ results: # parameters about what to do with the experiments
     
 solvers_parameters: # general parameters applied to all solvers. can be overwritten by specific solver parameters below
     nb_repetition: 2 # number of repetitions run for stochastic algorithm
-    nb_epochs: 100 # number of epochs to run for one algorithm, i.e., effective data passes
+    nb_epochs: 10 # number of epochs to run for one algorithm, i.e., effective data passes
     tolerance: 1e-8 # float, the algorithms will be stopped when the norm of gradient reaches below this threshold.
     initialization: zeros # how to initialize the algorithm. Only zeros implemented so far
     distribution: uniform # for some algorithms, we need to sample data wrt a distribution. Can be "uniform". Other wise must be a lambda function taking nb_data as an input and returning a certain np.array
 # example : lambda nb_data, p0=1./(nb_data + 1): np.array([p0] + [(1 - p0) / nb_data] * nb_data)
-    lr: 1.0 # float, learning rate value for SAN/SANA
     stepsize_type: constant # could be vanishing
     stepsize_factor: 1.0 # float, multiplies the default stepsize of the method by this factor
-    stepsize_vanishing_exponent: 0.0 # float, we divide the stepsize by t^exponent
+    stepsize_vanishing_exponent: 0.5 # float, we divide the stepsize by t^exponent
+    extrapolation_parameter: 1.0 # in [0,1], adds an extrapolation step to algorithms
     
 solvers: # list of solvers and optionnally their specific parameters as a dict. can have duplicates here but name_result must differ
     - SGD
