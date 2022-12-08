@@ -2,26 +2,33 @@ import os
 import time
 import yaml
 import copy
+import itertools  
 
 def get_config():
     # gets the config 
     path = 'config.yml'
-    with open(path, 'r') as stream:
-        config = yaml.safe_load(stream) # we get a dict from the file
-    config = merge_default_param(config) # apply the hardwritten default parameters if needed
+    with open(path, 'r') as file:
+        config = yaml.safe_load(file) # we get a dict from the file
+    # apply the hardwritten default parameters if needed
+    config = merge_default_param(config) 
     # does some cleaning on the solvers parameters
-    config = apply_default_solver_parameters(config) # decide which parameter to apply per solver
+    # decide which parameter to apply per solver
+    config = apply_default_solver_parameters(config) 
+    # if we want to do grid search on some parameters, duplicate the solvers as needed
+    config = deal_with_grid_search(config)
+    # read the parameters and extract some useful information
     config['solvers_parameters']['solvers_to_run'] = get_list_solver_to_run(config)
     config['solvers_parameters']['solvers_to_load'] = get_list_solver_to_load(config)
     config['results']['records_to_plot'] = get_list_record_to_plot(config)
     config['results']['records_to_record'] = get_list_record_to_record(config)
     return config
 
+
 def merge_default_param(config):
     # local user > local default > global user > global default 
     # merge default and user values at a global level
-    with open('src/config_default.yml', 'r') as stream:
-        config_default = yaml.safe_load(stream)
+    with open('src/config_default.yml', 'r') as file:
+        config_default = yaml.safe_load(file)
     config['problem'] = { **config_default['problem'] , **config['problem'] } 
     config['results'] = { **config_default['results'] , **config['results'] } 
     config['solvers_parameters'] = { **config_default['solvers_parameters'] , **config['solvers_parameters'] } 
@@ -55,6 +62,53 @@ def apply_default_solver_parameters(config):
             name_solver = list(solver.keys())[0] # there should be only one key
             lst[idx] = { name_solver : { **dict_default_param, 'flavor_name' : name_solver, **solver[name_solver] } }
     return config
+
+
+def deal_with_grid_search(config):
+    # if any solver gets called with a 'grid_search' parameter
+    # create as much solver calls as needed, each with its own parameter
+    # do what is needed so that this grid search can be plotted later
+    # we assume that in config['solvers'] there is only dict and no string since this is dealt with in apply_default_solver_parameters
+    new_config_solvers = []
+    for solver_dict in config['solvers']:
+        solver_name = list(solver_dict)[0]
+        param_dict = solver_dict[solver_name]
+        if 'grid_search' in param_dict.keys():
+            # we have work to do
+            grid_search_param_names = list(param_dict['grid_search'].keys())
+            # if the values come as a dict, replace it with a list
+            for parameter_name in grid_search_param_names:
+                if isinstance(param_dict['grid_search'][parameter_name], dict): # TODO
+                    pass
+            # loop over all possible parameter combinations
+            list_list_values = list(param_dict['grid_search'].values()) #[(1.0, 2),(1.1, 2),.., (2.0, 5)]
+            unique_indexes = [ list(range(len(liste))) for liste in list_list_values ] #[(0, 0),(1, 0),.., (10, 4)]
+            for param_tuple, index in zip(itertools.product(*list_list_values), itertools.product(*unique_indexes)):
+                # we want to create in config['solvers'] a new entry with those parameters
+                # first copy all the other parameters
+                entry_param = copy.deepcopy(param_dict)
+                # we don't need that here
+                del entry_param['grid_search'] 
+                # leave a trace of what we did could be useful later
+                entry_param['grid_search_param_names'] = grid_search_param_names 
+                # set a unique name to the flavor
+                entry_param['flavor_name'] += '_'+'_'.join([str(index[i]) for i in range(len(index))])
+                # set the specific parameters for this entry
+                for param_name, param_value in zip(grid_search_param_names, param_tuple):
+                    entry_param[param_name] = param_value
+                # the dict is ready, we can add it to the config dict
+                new_config_solvers.append({solver_name : entry_param})
+        else:
+            # we have a solver with no grid search. So we will want to keep it
+            new_config_solvers.append(solver_dict)
+    # we now update config['solvers']. Note that by doing so, we 
+    # 1) kept all solvers with no grid search
+    # 2) got rid of all solvers with grid search
+    # 3) created a bunch of copies of these solvers with appropriate parameters
+    config['solvers'] = new_config_solvers
+    return config
+
+
 
 def get_list_solver_to_run(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
