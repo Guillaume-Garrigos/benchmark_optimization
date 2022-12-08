@@ -2,7 +2,8 @@ import os
 import time
 import yaml
 import copy
-import itertools  
+import itertools
+import numpy as np
 
 def get_config():
     # gets the config 
@@ -78,8 +79,8 @@ def deal_with_grid_search(config):
             grid_search_param_names = list(param_dict['grid_search'].keys())
             # if the values come as a dict, replace it with a list
             for parameter_name in grid_search_param_names:
-                if isinstance(param_dict['grid_search'][parameter_name], dict): # TODO
-                    pass
+                if isinstance(param_dict['grid_search'][parameter_name], dict):
+                    param_dict['grid_search'][parameter_name] = get_param_grid(param_dict['grid_search'][parameter_name])
             # loop over all possible parameter combinations
             list_list_values = list(param_dict['grid_search'].values()) #[(1.0, 2),(1.1, 2),.., (2.0, 5)]
             unique_indexes = [ list(range(len(liste))) for liste in list_list_values ] #[(0, 0),(1, 0),.., (10, 4)]
@@ -108,7 +109,14 @@ def deal_with_grid_search(config):
     config['solvers'] = new_config_solvers
     return config
 
-
+def get_param_grid(dico):
+    # Input: a dictionnary with some parameters
+    # Output: a list of floats. Generated with range(parameters) for instance or more complicated
+    dico['scale'] = dico.get('scale', 'linear') # default is linear
+    if dico['scale'] == 'linear':
+        return np.linspace(dico['min'], dico['max'], num=dico['number'])
+    elif dico['scale'] == 'log':
+        return np.geomspace(dico['min'], dico['max'], num=dico['number'])
 
 def get_list_solver_to_run(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]

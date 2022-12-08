@@ -33,7 +33,6 @@ solvers:
 It is also possible to perform a lineasearch on more than one parameter, but beware that the cost increases exponentially.
 In our example, we could explore different values for $\alpha$:
 
-
 ```
 solvers: 
     - SGD:
@@ -48,4 +47,18 @@ solvers:
                 - 0.25
                 - 0.5
                 - 0.75
+```
+
+If you want to do a grid search over a large number of parameters, entering them one by one could be tedious, so it is also possible to simply set some parameters defining the grid. You must set the minimal and maximal values, and how many parameter you want. By default the grid is taken on a linear scale, but you can also choose logarithmic one.
+
+```
+solvers: 
+    - SGD:
+        stepsize_type: vanishing
+        grid_search:
+            stepsize_factor:
+                min: 0.001
+                max: 1.0
+                number: 40
+                scale: log # linear
 ```
