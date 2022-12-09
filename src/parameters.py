@@ -1,5 +1,4 @@
 import os
-import time
 import yaml
 import copy
 import itertools
@@ -87,18 +86,19 @@ def deal_with_grid_search(config):
             for param_tuple, index in zip(itertools.product(*list_list_values), itertools.product(*unique_indexes)):
                 # we want to create in config['solvers'] a new entry with those parameters
                 # first copy all the other parameters
-                entry_param = copy.deepcopy(param_dict)
+                new_entry_param = copy.deepcopy(param_dict)
                 # we don't need that here
-                del entry_param['grid_search'] 
+                del new_entry_param['grid_search'] 
                 # leave a trace of what we did could be useful later
-                entry_param['grid_search_param_names'] = grid_search_param_names 
+                new_entry_param['grid_search_param_names'] = grid_search_param_names 
+                new_entry_param['grid_search_result'] = True
                 # set a unique name to the flavor
-                entry_param['flavor_name'] += '_'+'_'.join([str(index[i]) for i in range(len(index))])
+                new_entry_param['flavor_name'] += '_'+'_'.join([str(index[i]) for i in range(len(index))])
                 # set the specific parameters for this entry
                 for param_name, param_value in zip(grid_search_param_names, param_tuple):
-                    entry_param[param_name] = param_value
+                    new_entry_param[param_name] = param_value
                 # the dict is ready, we can add it to the config dict
-                new_config_solvers.append({solver_name : entry_param})
+                new_config_solvers.append({solver_name : new_entry_param})
         else:
             # we have a solver with no grid search. So we will want to keep it
             new_config_solvers.append(solver_dict)
