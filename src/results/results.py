@@ -154,6 +154,21 @@ class Results(Dict2D):
                         print(f"Loaded record for the solver {solver_name} : {record_name}")
         return
 
+    def do_we_plot_curves(self, record_names):
+        # we are tasked to plot the curves corresponding to a list of records (usually one record)
+        # and to possibly various solvers
+        # we don't want to plot it if all the solvers are part of a grid search
+        # unless this default behavior is overriden in the config file
+        for record_name in record_names:
+            record_list = self.extract_list_given_record(record_name)
+            for record in record_list:
+                if (not record.param.config.get('grid_search_result')) or (self.param.results['grid_search_curves_plot']):
+                    # ok we found one solver which is not part of the grid search 
+                    # so it is worth creating a plot
+                    return True
+        # we finish our search, there is nothing but gridsearch so we don't plot
+        return False
+
     def plot_parallel(self, record_names, xaxis_time = False):
         """ record_name is the name of some Records(), eventually a list of names
             We assume that our Result contains that Records() for one or many Solver()
@@ -162,82 +177,90 @@ class Results(Dict2D):
             The quantity to plot is in Records.value_repetition 
             The parameters of the plot are in Records.plot
             See Plot_param() for the default values.
+
+            We likely won't plot records if they are part of a grid search
         """
-        # set parameters
-        if isinstance(record_names, str):
+        if isinstance(record_names, str): # classic case in which one plot = one record
             record_names = [record_names]
-        param_plot = self.param.plot
-        # first setup of the figure
-        plt.rc('text', usetex=True)
-        plt.rc('text.latex', preamble=r'\usepackage{underscore}')
-        plt.rc('font', family='sans-serif')
-        #param_plot = record_list[0].param.plot # all these Records should have the same figsize/dpi parameters
-        # create the canvas
-        plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
+        if not self.do_we_plot_curves(record_names): # if not we just do nothing
+            return
+        else: # we plot
+            # set parameters
+            param_plot = self.param.plot
+            # first setup of the figure TODO check if this isn't slowing down everything, put a if maybe
+            plt.rc('text', usetex=True)
+            plt.rc('text.latex', preamble=r'\usepackage{underscore}')
+            plt.rc('font', family='sans-serif')
+            #param_plot = record_list[0].param.plot # all these Records should have the same figsize/dpi parameters
+            # create the canvas
+            plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
 
-        # loop over possible records to plot
-        there_is_mixed_records = len(record_names) > 1
-        for record_name in record_names:
-            # Get a list of Records() corresponding to all the Solvers() recording record_name
-            record_list = self.extract_list_given_record(record_name)
-            # add curves to the canvas
-            label_append = ""
-            if there_is_mixed_records:
-                param_plot.xlabel = record_list[0].param.plot.xlabel
-                param_plot.ylabel = "" # we don't want to mix the ylabels for different records
-                label_append += ':' + record_name # instead we display it in the legend
-            self.plot_curves_given_record(record_list, xaxis_time=xaxis_time, label_append=label_append)
+            # loop over possible records to plot
+            there_is_mixed_records = len(record_names) > 1
+            for record_name in record_names:
+                # Get a list of Records() corresponding to all the Solvers() recording record_name
+                record_list = self.extract_list_given_record(record_name)
+                # add curves to the canvas
+                label_append = ""
+                if there_is_mixed_records:
+                    param_plot.xlabel = record_list[0].param.plot.xlabel
+                    param_plot.ylabel = "" # we don't want to mix the ylabels for different records
+                    label_append += ':' + record_name # instead we display it in the legend
+                self.plot_curves_given_record(record_list, xaxis_time=xaxis_time, label_append=label_append)
 
-        # All curves are plotted. Make it look good.
-        plt.tick_params(labelsize=20)
-        plt.legend(fontsize=30, loc='best')
-        if param_plot.title is not None:
-            plt.title(param_plot.title, fontsize=25)
-        plt.grid(True)
-        # set the labels for axis
-        if xaxis_time:
-            xlabel = "Time (s)"
-        else:
-            xlabel = "Effective Passes"
-        if there_is_mixed_records: # we don't display yaxis
-            ylabel = "" 
-        else: # get the Record from the unique record name and extract the ylabel
-            ylabel = self.extract_list_given_record(record_names[0])[0].param.plot.ylabel
-        plt.xlabel(xlabel, fontsize=25)
-        plt.ylabel(ylabel, fontsize=25)
-        
-        # finally, show/save the figures
-        if param_plot.save_plot:
-            fig_name = "_vs_".join(record_names)
-            fig_path = os.path.join(param_plot.fig_folder, fig_name)
+            # All curves are plotted. Make it look good.
+            plt.tick_params(labelsize=20)
+            plt.legend(fontsize=30, loc='best')
+            if param_plot.title is not None:
+                plt.title(param_plot.title, fontsize=25)
+            plt.grid(True)
+            # set the labels for axis
             if xaxis_time:
-                fig_path = fig_path + '-time'
-            plt.savefig(fig_path+'.pdf', bbox_inches='tight', pad_inches=0.01)
-        if param_plot.do_we_plot:
-            plt.show()
-        return
+                xlabel = "Time (s)"
+            else:
+                xlabel = "Effective Passes"
+            if there_is_mixed_records: # we don't display yaxis
+                ylabel = "" 
+            else: # get the Record from the unique record name and extract the ylabel
+                ylabel = self.extract_list_given_record(record_names[0])[0].param.plot.ylabel
+            plt.xlabel(xlabel, fontsize=25)
+            plt.ylabel(ylabel, fontsize=25)
+            
+            # finally, show/save the figures
+            if param_plot.save_plot:
+                fig_name = "_vs_".join(record_names)
+                fig_path = os.path.join(param_plot.fig_folder, fig_name)
+                if xaxis_time:
+                    fig_path = fig_path + '-time'
+                plt.savefig(fig_path+'.pdf', bbox_inches='tight', pad_inches=0.01)
+            if param_plot.do_we_plot:
+                plt.show()
+            return
 
     def plot_curves_given_record(self, record_list, **args):
         # loop over the algorithms (each will have different marker)
         markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
         values_are_negative = any([any(record.value_avg<=0.0) for record in record_list])
         for record, marker in zip(record_list, markers):
-            param_plot = record.param.plot # each of those have different legend name
-            # set the xaxis
-            if args['xaxis_time']:
-                xaxis = record.xaxis_time
-                param_plot.xlabel = "Time (s)"
-            else:
-                xaxis = record.xaxis
-            # if the values are >0 we plot with logscale. Otherwise, normal scale
-            label = record.flavor_name + args['label_append']
-            if values_are_negative:
-                plt.plot(xaxis, record.value_avg, marker, label=label, lw=2)   
-            else:             
-                plt.semilogy(xaxis, record.value_avg, marker, label=label, lw=2)
-            # eventually show variance (for repetitions)
-            if param_plot.show_variance:
-                plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
+            # we won't plot the record if its part of a grid search unless specified
+            if (not record.param.config.get('grid_search_result')) or (self.param.results['grid_search_curves_plot']):
+                param_plot = record.param.plot # each of those have different legend name
+                # set the xaxis
+                if args['xaxis_time']:
+                    xaxis = record.xaxis_time
+                    param_plot.xlabel = "Time (s)"
+                else:
+                    xaxis = record.xaxis
+                # if the values are >0 we plot with logscale. Otherwise, normal scale
+                label = record.flavor_name + args['label_append']
+                # now we plot
+                if values_are_negative:
+                    plt.plot(xaxis, record.value_avg, marker, label=label, lw=2)   
+                else:             
+                    plt.semilogy(xaxis, record.value_avg, marker, label=label, lw=2)
+                # eventually show variance (for repetitions)
+                if param_plot.show_variance:
+                    plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
 
     def plot_all(self, xaxis_time=False):
         for record_name in self.param.records_to_plot:

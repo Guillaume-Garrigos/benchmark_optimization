@@ -62,3 +62,10 @@ solvers:
                 number: 40
                 scale: log # linear
 ```
+
+Note that, by default, solvers run with a grid search won't appear when plotting curves for Records (gradient norm, etc). This is because there might be way too much curves and it would be a mess. If you want to override this, set
+
+```
+results: 
+    grid_search_curves_plot: True
+```

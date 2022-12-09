@@ -28,6 +28,7 @@ class Solver(metaclass=ABCMeta):
         self.loss = problem.loss
         self.regularizer = problem.regularizer
         self.param = Parameters(problem.data) # can create problem with *reload*
+        self.param.config = args
         # create a bunch of attributes from a dict coming from the config file
         # e.g. stepsize, flavor_name etc. See config.default
         for key in args.keys():

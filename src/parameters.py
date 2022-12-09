@@ -150,7 +150,13 @@ class Parameters():
     def __init__(self, data):
         # loads the config file into a dict
         config = get_config()
-        self.config = config # just in case
+        # everything which is below is a mess, I shouldn't copy values like that one by one beacause everytime I add a parameter it becomes endless
+        # so better maybe keep the structure of the config file?
+        self.config = config
+        self.problem = config['problem']
+        self.results = config['results']
+        self.solvers_parameters = config['solvers_parameters']
+
         # parameters for the solvers IS THIS NECESSARY?
         self.nb_epoch = config['solvers_parameters']['nb_epochs']
         self.tol = float(config['solvers_parameters']['tolerance'])
