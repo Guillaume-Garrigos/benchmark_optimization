@@ -69,7 +69,13 @@ def deal_with_grid_search(config):
     # create as much solver calls as needed, each with its own parameter
     # do what is needed so that this grid search can be plotted later
     # we assume that in config['solvers'] there is only dict and no string since this is dealt with in apply_default_solver_parameters
-    new_config_solvers = []
+
+    # In this we'll gather all the grid search info we'll need
+    grid_search_info = []
+    config['results']['grid_search_to_plot'] = []
+    # this is going to replace config['solvers'] at the end
+    new_config_solvers = [] 
+    # we explore what is in config['solvers']
     for solver_dict in config['solvers']:
         solver_name = list(solver_dict)[0]
         param_dict = solver_dict[solver_name]
@@ -78,17 +84,16 @@ def deal_with_grid_search(config):
             grid_search_param_names = list(param_dict['grid_search'].keys())
             # if the values come as a dict, replace it with a list
             for parameter_name in grid_search_param_names:
-                if isinstance(param_dict['grid_search'][parameter_name], dict):
-                    param_dict['grid_search'][parameter_name] = get_param_grid(param_dict['grid_search'][parameter_name])
+                param_dict['grid_search'][parameter_name] = set_param_grid(param_dict['grid_search'][parameter_name])
             # loop over all possible parameter combinations
-            list_list_values = list(param_dict['grid_search'].values()) #[(1.0, 2),(1.1, 2),.., (2.0, 5)]
+            list_list_values = [ dico['grid'] for dico in param_dict['grid_search'].values() ] #[(1.0, 2),(1.1, 2),.., (2.0, 5)]
             unique_indexes = [ list(range(len(liste))) for liste in list_list_values ] #[(0, 0),(1, 0),.., (10, 4)]
             for param_tuple, index in zip(itertools.product(*list_list_values), itertools.product(*unique_indexes)):
                 # we want to create in config['solvers'] a new entry with those parameters
                 # first copy all the other parameters
                 new_entry_param = copy.deepcopy(param_dict)
                 # we don't need that here
-                del new_entry_param['grid_search'] 
+                # TODO del new_entry_param['grid_search'] 
                 # leave a trace of what we did could be useful later
                 new_entry_param['grid_search_param_names'] = grid_search_param_names 
                 new_entry_param['grid_search_result'] = True
@@ -109,14 +114,21 @@ def deal_with_grid_search(config):
     config['solvers'] = new_config_solvers
     return config
 
-def get_param_grid(dico):
-    # Input: a dictionnary with some parameters
-    # Output: a list of floats. Generated with range(parameters) for instance or more complicated
-    dico['scale'] = dico.get('scale', 'linear') # default is linear
-    if dico['scale'] == 'linear':
-        return np.linspace(dico['min'], dico['max'], num=dico['number'])
-    elif dico['scale'] == 'log':
-        return np.geomspace(dico['min'], dico['max'], num=dico['number'])
+def set_param_grid(input):
+    # Input: a dictionnary with some parameters, or a list
+    # Output: a dictionnary with at least the list of parameters
+    # Generated with range(parameters) for instance or more complicated
+    if isinstance(input, list): # we keep it simple
+        return { 'grid' : input }
+    if isinstance(input, dict): # we have some work to do
+        input['scale'] = input.get('scale', 'linear') # default is linear
+        input['number'] = input.get('number', 10) # default is 10
+        if input['scale'] == 'linear':
+            input['grid'] = np.linspace(input['min'], input['max'], num=input['number'])
+            return input
+        elif input['scale'] == 'log':
+            input['grid'] = np.geomspace(input['min'], input['max'], num=input['number'])
+            return input
 
 def get_list_solver_to_run(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
@@ -142,7 +154,9 @@ def get_list_record_to_record(config):
         list_of_records.append("time_epoch")
     return list(set(list_of_records)) # remove duplicates
 
-
+def merge_list(list1, list2):
+    # https://stackoverflow.com/a/71861638
+    return [*dict.fromkeys(list1+list2)]
 
 ##################################################
 class Parameters():
