@@ -188,10 +188,10 @@ class Results(Dict2D):
             # set parameters
             param_plot = self.param.plot
             # first setup of the figure TODO check if this isn't slowing down everything, put a if maybe
-            plt.rc('text', usetex=True)
-            plt.rc('text.latex', preamble=r'\usepackage{underscore}')
+            if self.param.results['latex']:
+                plt.rc('text', usetex=True)
+                plt.rc('text.latex', preamble=r'\usepackage{underscore}')
             plt.rc('font', family='sans-serif')
-            #param_plot = record_list[0].param.plot # all these Records should have the same figsize/dpi parameters
             # create the canvas
             plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
 
