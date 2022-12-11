@@ -237,6 +237,7 @@ class Results(Dict2D):
                 plt.show()
             return
 
+
     def plot_curves_given_record(self, record_list, **args):
         # loop over the algorithms (each will have different marker)
         markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
@@ -290,6 +291,7 @@ class Results(Dict2D):
         if not config['results']['grid_search_comparison_plot']: # we dont plot
             return
         else: # lets go
+
             # set parameters
             param_plot = self.param.plot
             # first setup of the figure TODO check if this isn't slowing down everything, put a if maybe
@@ -297,8 +299,13 @@ class Results(Dict2D):
                 plt.rc('text', usetex=True)
                 plt.rc('text.latex', preamble=r'\usepackage{underscore}')
             plt.rc('font', family='sans-serif')
-            # create the canvas
+            # create the canvas and set some parameters
             plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
+            xscale = 'linear' # default value for the plot
+            yscale = 'log' # default value for the plot
+            xlabel = parameter_name # default
+            title = 'Grid search comparison' # default
+
             # Loop over all solvers names
             solver_names = [*dict.fromkeys(config['solvers_parameters']['solvers_to_run'])]
             for solver_name in solver_names:
@@ -306,7 +313,6 @@ class Results(Dict2D):
                 scatter_parameters = [] 
                 scatter_records = [] 
                 scatter_error_lower, scatter_error_upper = [],[] #  for the error below and above
-                xscale = 'linear' # default value for the plot
                 # we collect all the instances which are part of this grid search
                 for solver_instance in config['solvers']:
                     if solver_name in solver_instance.keys():
@@ -322,19 +328,41 @@ class Results(Dict2D):
                             scatter_records.append(record.value_avg[-1]) # the last value for this record
                             scatter_error_lower.append(record.value_avg[-1] - record.value_min[-1])
                             scatter_error_upper.append(record.value_max[-1] - record.value_avg[-1])
-                            # check a few display parameters
+                            # get access to a few plot parameters
                             if instance_param['grid_search'][parameter_name]['scale'] == 'log':
-                                xscale = 'log' # if only one method wants logscale we do it
-                # ok we have all the data about this solver. We can plot it.
-                plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='x') # https://stackoverflow.com/a/43990689
-                plt.xscale(xscale)
-                plt.yscale('log')
-
-
-
-                # extract what we want to plot
-            # check if there is something to plot? and repetitions?
-            # add to the graph a scatter plot. Legend is the solver name
-        # Done
-        
-
+                                # if only one method wants logscale we do it
+                                # we implicitly assume that parameters are positive ...
+                                xscale = 'log' 
+                            if record.value_min[-1] <= 0.0:
+                                # if only one part of the graph is negative we can have log scale
+                                yscale = 'linear'
+                            if instance_param['grid_search'][parameter_name].get('label'):
+                                xlabel = instance_param['grid_search'][parameter_name].get('label')
+                            ylabel = record.param.plot.ylabel
+                            if instance_param['grid_search'][parameter_name].get('title'):
+                                title = instance_param['grid_search'][parameter_name].get('title')
+                # ok we have all the data about this solver. 
+                # it's plotting time
+                plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='o', label=solver_name) # https://stackoverflow.com/a/43990689
+            
+            # now all "curves" are plotted. We make it look good.
+            # scales 
+            plt.xscale(xscale)
+            plt.yscale(yscale)
+            # decorations
+            plt.tick_params(labelsize=20)
+            plt.grid(True)
+            # text around the graph
+            plt.title(title, fontsize=25)
+            plt.xlabel(xlabel, fontsize=25)
+            plt.ylabel(ylabel, fontsize=25)
+            plt.legend(fontsize=30, loc='best')
+            
+            # finally, show/save the figures
+            if param_plot.save_plot:
+                fig_name = 'grid_search_' + parameter_name
+                fig_path = os.path.join(param_plot.fig_folder, fig_name)
+                plt.savefig(fig_path+'.pdf', bbox_inches='tight', pad_inches=0.01)
+            if param_plot.do_we_plot:
+                plt.show()
+            return 
