@@ -75,4 +75,4 @@ results:
 
 A few other options are available :
 - label : a string, which modifies what is displayed as the name of the parameter in the figure. By default it is the hard-coded name of the variable.
-- title : a string, which is going to be used as the title of the figure. Can be set to None to have no title.
+- title : a string, which is going to be used as the title of the figure.
