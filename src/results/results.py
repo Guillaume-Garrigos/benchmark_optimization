@@ -29,7 +29,7 @@ class Dict2D(dict):
             Dict2D.setvalue(xkey, ykey, value)
             Don't want to overwrite the existing set function
         We read the coefficients of Dict2D via
-            Dict2D.getvalue(xkey, ykey, value)
+            Dict2D.getvalue(xkey, ykey)
             Don't want to overwrite the .get method of dicts
 
         Dict2D.xkeys() is a list of all the xkeys 
@@ -263,6 +263,7 @@ class Results(Dict2D):
                     plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
 
     def plot_all(self, xaxis_time=False):
+        # 1) plot the curves for each records
         for record_name in self.param.records_to_plot:
             # here we simply plot this record, for every solver it is related to
             if record_name in self.ykeys(): # safecheck
@@ -270,11 +271,70 @@ class Results(Dict2D):
                 self.plot_parallel(record_name)
                 if xaxis_time: # second pass for the plots wrt time
                     self.plot_parallel(record_name, xaxis_time = True)
+        # 2) plot curves when comparing records with each other
         for comparison in self.param.config['results']['records_to_compare']:
             # comparison is a list of Record names
             # we'll now plot different records on the same plot, for every solver
             if all( record_name in self.ykeys() for record_name in comparison ): # safecheck
                 print(f"Start plotting the compared results for: {comparison}")
                 self.plot_parallel(comparison)
+        # 3) plot the results on the grid search
+        for parameter_name in self.param.config['results']['grid_search_to_plot']:
+            print(f"Start plotting the grid search results for the parameter: {parameter_name}")
+            self.plot_grid_search(parameter_name)
+    
+    def plot_grid_search(self, parameter_name):
+        # We did a grid search on parameter_name for one or many solvers
+        # we want to plot those results
+        config = self.param.config
+        if not config['results']['grid_search_comparison_plot']: # we dont plot
+            return
+        else: # lets go
+            # set parameters
+            param_plot = self.param.plot
+            # first setup of the figure TODO check if this isn't slowing down everything, put a if maybe
+            if self.param.results['latex']:
+                plt.rc('text', usetex=True)
+                plt.rc('text.latex', preamble=r'\usepackage{underscore}')
+            plt.rc('font', family='sans-serif')
+            # create the canvas
+            plt.figure(figsize=param_plot.figsize, dpi=param_plot.dpi)
+            # Loop over all solvers names
+            solver_names = [*dict.fromkeys(config['solvers_parameters']['solvers_to_run'])]
+            for solver_name in solver_names:
+                # we're gonna put in those lists all the points we want to plot for this solver_name
+                scatter_parameters = [] 
+                scatter_records = [] 
+                scatter_error_lower, scatter_error_upper = [],[] #  for the error below and above
+                xscale = 'linear' # default value for the plot
+                # we collect all the instances which are part of this grid search
+                for solver_instance in config['solvers']:
+                    if solver_name in solver_instance.keys():
+                        # Check if that instance is part of the grid search
+                        instance_param = solver_instance[solver_name]
+                        if instance_param.get('grid_search') and parameter_name in instance_param['grid_search'].keys(): # ok we want to add it to our graph
+                            # we access the Records of this instance
+                            flavor_name = instance_param['flavor_name']
+                            record_name = instance_param['grid_search'][parameter_name].get('record', 'function_value')
+                            record = self.getvalue(flavor_name, record_name)
+                            # now we dig into it and extract the desired values
+                            scatter_parameters.append(instance_param[parameter_name]) # the value of the parameter for this instance
+                            scatter_records.append(record.value_avg[-1]) # the last value for this record
+                            scatter_error_lower.append(record.value_avg[-1] - record.value_min[-1])
+                            scatter_error_upper.append(record.value_max[-1] - record.value_avg[-1])
+                            # check a few display parameters
+                            if instance_param['grid_search'][parameter_name]['scale'] == 'log':
+                                xscale = 'log' # if only one method wants logscale we do it
+                # ok we have all the data about this solver. We can plot it.
+                plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='x') # https://stackoverflow.com/a/43990689
+                plt.xscale(xscale)
+                plt.yscale('log')
 
+
+
+                # extract what we want to plot
+            # check if there is something to plot? and repetitions?
+            # add to the graph a scatter plot. Legend is the solver name
+        # Done
+        
 

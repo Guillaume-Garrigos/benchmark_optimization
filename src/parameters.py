@@ -72,7 +72,6 @@ def deal_with_grid_search(config):
 
     # In this we'll gather all the grid search info we'll need
     grid_search_info = []
-    config['results']['grid_search_to_plot'] = []
     # this is going to replace config['solvers'] at the end
     new_config_solvers = [] 
     # we explore what is in config['solvers']
@@ -82,6 +81,7 @@ def deal_with_grid_search(config):
         if 'grid_search' in param_dict.keys():
             # we have work to do
             grid_search_param_names = list(param_dict['grid_search'].keys())
+            grid_search_info = merge_list(grid_search_info, grid_search_param_names)
             # if the values come as a dict, replace it with a list
             for parameter_name in grid_search_param_names:
                 param_dict['grid_search'][parameter_name] = set_param_grid(param_dict['grid_search'][parameter_name])
@@ -92,9 +92,7 @@ def deal_with_grid_search(config):
                 # we want to create in config['solvers'] a new entry with those parameters
                 # first copy all the other parameters
                 new_entry_param = copy.deepcopy(param_dict)
-                # we don't need that here
-                # TODO del new_entry_param['grid_search'] 
-                # leave a trace of what we did could be useful later
+                # leave a trace of what we did could be useful later? TODO
                 new_entry_param['grid_search_param_names'] = grid_search_param_names 
                 new_entry_param['grid_search_result'] = True
                 # set a unique name to the flavor
@@ -112,6 +110,8 @@ def deal_with_grid_search(config):
     # 2) got rid of all solvers with grid search
     # 3) created a bunch of copies of these solvers with appropriate parameters
     config['solvers'] = new_config_solvers
+    # we store the list of the names of the parameters we want to grid-loop on
+    config['results']['grid_search_to_plot'] = grid_search_info
     return config
 
 def set_param_grid(input):
