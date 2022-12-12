@@ -2,11 +2,29 @@ import os
 import yaml
 import copy
 import itertools
+import shutil
 import numpy as np
+
+def secure_config(path_to_config=None):
+    # keeps a copy of the config file with a fixed location/name
+    # so we can access it anytime
+    if path_to_config is None:
+        # we assume that the path was 'config.py'
+        path = 'config.yml'
+    else:
+        path = path_to_config
+    # secure the config file so we can retrieve it later
+    shutil.copy(os.path.join('', path), os.path.join('src','config.yml'))
+    return
+
+def release_config():
+    # deletes the copy of the config file
+    os.remove(os.path.join('src','config.yml'))
+    return
 
 def get_config():
     # gets the config 
-    path = 'config.yml'
+    path = os.path.join('src','config.yml')
     with open(path, 'r') as file:
         config = yaml.safe_load(file) # we get a dict from the file
     # apply the hardwritten default parameters if needed

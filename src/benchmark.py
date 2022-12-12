@@ -2,7 +2,7 @@ import os
 import logging
 import time
 
-from src.parameters import get_config
+from src.parameters import get_config, secure_config, release_config
 from src.problem.data import Data
 from src.problem.problem import Problem
 from src.results.results import Results
@@ -57,7 +57,8 @@ def benchmark_plot(results):
     results.plot_all(xaxis_time = results.param.measure_time)
     return
 
-def benchmark_datasets():
+def benchmark_datasets(path_to_config=None):
+    secure_config(path_to_config)
     config = get_config()
     # loop over all datasets
     for dataset_name in config['problem']['dataset_names']:
@@ -72,4 +73,5 @@ def benchmark_datasets():
         if problem.param.do_we_plot:
             benchmark_plot(results)
         print(f"END running {dataset_name}")
+    release_config()
     return
