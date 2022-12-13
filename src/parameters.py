@@ -137,7 +137,7 @@ def set_param_grid(input):
     # Output: a dictionnary with at least the list of parameters
     # Generated with range(parameters) for instance or more complicated
     if isinstance(input, list): # we keep it simple
-        return { 'grid' : input }
+        return { 'grid' : input , 'scale' : 'linear', 'number' : len(input) }
     if isinstance(input, dict): # we have some work to do
         input['scale'] = input.get('scale', 'linear') # default is linear
         input['number'] = input.get('number', 10) # default is 10
