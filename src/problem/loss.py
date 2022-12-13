@@ -52,10 +52,10 @@ class PhaseRetrieval:
     def __init__(self):
         pass
     def val(self, y, y_hat):
-        return np.abs(y_hat**2-y**2)
+        return np.abs(y_hat**2-y)
     def prime(self, y, y_hat):
-        return 2*y_hat*np.sign(y_hat**2 - y**2)
+        return 2*y_hat*np.sign(y_hat**2 - y)
     def dprime(self, y, y_hat):
-        return 2*np.sign(y_hat**2 - y**2) 
+        return 2*np.sign(y_hat**2 - y) 
     
         

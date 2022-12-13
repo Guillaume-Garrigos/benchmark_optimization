@@ -3,14 +3,14 @@ problem:
     type: classification
     loss: Logistic
     regularizer: L2
-    reg_parameter: inv_sqrt_data
+    reg_parameter: 0.0001
     dataset_names:
         - dummy
     dataset_path_folder: datasets
     
 results: 
-    output_path: output/my first batch of experiments
-    xp_name: my first xp
+    output_path: output/dummy
+    xp_name: dummy
     measure_time: False
     save_data: True
     save_plot: True
@@ -26,19 +26,32 @@ results:
         - function_value
 
 solvers_parameters: # general parameters applied to all solvers. can be overwritten by specific solver parameters below
-    nb_repetition: 3
-    nb_epochs: 100
+    nb_repetition: 2
+    nb_epochs: 50
     tolerance: 1e-10
     initialization: zeros
     distribution: uniform
-    stepsize_type: vanishing
-    stepsize_factor: 1.0
-    stepsize_vanishing_exponent: 0.5
     
 # list of solvers and their specific parameters. can have duplicates but name_result must differ
 solvers: 
-    - GD
-    - SGD
-        
+    - FUVAL:
+        s_type: zeros
+        stepsize_type: constant
+        grid_search:
+            stepsize_factor:
+                min: 0.1
+                max: 20.0
+                number: 20
+                scale: log
+
+    - SGD:
+        stepsize_type: constant
+        grid_search:
+            stepsize_factor:
+                min: 0.0001
+                max: 1.0
+                number: 20
+                scale: log
+            
 
     
