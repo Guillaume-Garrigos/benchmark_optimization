@@ -43,7 +43,7 @@ class Time_epoch(Records):
         Records.__init__(self, self.name, solver)
         self.param.plot.xlabel = "Effective Passes"
         self.param.plot.ylabel = "Time (s)"
-        self.param.plot.threshold = None # we don't want to threshold that
+        self.param.plot.threshold_down = None # we don't want to threshold that
     
     def store(self, solver):
         self.value.append(solver.total_running_time)
@@ -57,7 +57,7 @@ class Stepsize(Records):
         Records.__init__(self, self.name, solver)
         self.param.plot.xlabel = "Effective Passes"
         self.param.plot.ylabel = "Stepsize"
-        self.param.plot.threshold = None # we don't want to threshold that
+        self.param.plot.threshold_down = None # we don't want to threshold that
     
     def store(self, solver):
         self.value.append(solver.stepsize)

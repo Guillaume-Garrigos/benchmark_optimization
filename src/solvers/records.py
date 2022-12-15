@@ -48,8 +48,8 @@ class Records():
         result = np.array(list(map(lambda arr: arr[:len_min], result)))
         # compute the average; maybe cut it when under threshold; check positivity
         self.value_avg = np.mean(result, axis=0)
-        if param.threshold != 0.0 and param.threshold is not None:
-            threshold = param.threshold
+        if param.threshold_down != 0.0 and param.threshold_down is not None:
+            threshold = param.threshold_down
             len_cut = np.argmax(self.value_avg <= threshold) + \
                 1 if np.sum(self.value_avg <= threshold) > 0 else len(self.value_avg)
         else:
