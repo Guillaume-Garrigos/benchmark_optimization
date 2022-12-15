@@ -49,9 +49,9 @@ class Records():
         # compute the average; maybe cut it when under threshold; check positivity
         self.value_avg = np.mean(result, axis=0)
         if param.threshold_down != 0.0 and param.threshold_down is not None:
-            threshold = param.threshold_down
-            len_cut = np.argmax(self.value_avg <= threshold) + \
-                1 if np.sum(self.value_avg <= threshold) > 0 else len(self.value_avg)
+            threshold_down = param.threshold_down
+            len_cut = np.argmax(self.value_avg <= threshold_down) + \
+                1 if np.sum(self.value_avg <= threshold_down) > 0 else len(self.value_avg)
         else:
             len_cut = len(self.value_avg)
         self.value_avg = self.value_avg[:len_cut]
