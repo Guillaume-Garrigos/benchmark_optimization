@@ -19,7 +19,7 @@ results:
     log_file: log.txt
     
     dpi: 50
-    plot_threshold: 1.0e-12
+    plot_threshold_down: 1.0e-12
     subopt: True
     records_to_plot: # list of Records names
         - gradient_norm

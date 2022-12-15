@@ -241,7 +241,7 @@ class Plot_param():
         self.fig_name = None # for the plots in pdf
         self.fig_path = None # complete path for the pdf plot
         self.measure_time = parameters.measure_time
-        self.threshold = float(config['results']['plot_threshold']) # option to alter the plot
+        self.threshold = float(config['results']['plot_threshold_down']) # option to alter the plot
         self.show_variance = True # default
         self.do_we_plot = parameters.do_we_plot
         self.save_data = parameters.save_data

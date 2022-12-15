@@ -20,7 +20,7 @@ results: # parameters about what to do with the experiments
     log_file: log.txt # log file name 
     
     dpi: 50 # quality of the produced graphs. Strong impact on performance.
-    plot_threshold: 1.0e-12 # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
+    plot_threshold_down: 1.0e-12 # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
     subopt: True # Should we plot sub-optimality curves?
     latex: True # SHould we activate latex for the fonts? Allows to write more math. True by default, but makes the first plot a bit slow ...
     records_to_plot: # list. Typically gradient_norm or function_splitting. see Records for more details
