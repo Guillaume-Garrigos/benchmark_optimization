@@ -42,11 +42,12 @@ class Data():
     
     def generate_data(self):
         problem_type = self.config['problem']['type']
-        nb_data = 100
+        nb_data = 150
         nb_features = 50
         std = 0.0
         if problem_type == 'phase retrieval':
             x = np.random.randn(nb_features)
+            x = x/np.linalg.norm(x)
             A = np.random.randn(nb_data, nb_features)
             noise = std* np.random.randn(nb_data)
             b = (A @ x)**2 + noise
@@ -62,8 +63,10 @@ class Data():
             idx_max = (y == max_v)
             y[idx_min] = -1
             y[idx_max] = 1
-        elif problem_type in ['regression','phase retrieval'] :
+        elif problem_type in ['regression'] :
             X = X / np.max(np.abs(X), axis=0)  # scale features to [-1, 1]
+        elif problem_type in ['phase retrieval'] :
+            pass
         else:
             raise Exception("Unknown problem type!")
         # adding a column filling with all ones.(bias term)
@@ -89,7 +92,6 @@ def sparsity(data):
 # ===============================
 # These functions to generate artificial data. Not used?
 # =================================
-
 
 
 def simu_linreg(x, n, std=1., corr=0.5):
