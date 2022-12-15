@@ -236,14 +236,15 @@ class Plot_param():
         self.ylabel = ""
         self.title = f"{self.data_name}" # default
         self.dpi = config['results']['dpi']
-        self.figsize = (18, 12)
+        self.figsize = tuple(config['results']['figsize']) # in config it comes as a list
         self.fig_folder = parameters.output_folder # the folder output/data/
         self.fig_name = None # for the plots in pdf
         self.fig_path = None # complete path for the pdf plot
         self.measure_time = parameters.measure_time
         self.threshold_down = np.float64(config['results']['plot_threshold_down']) # option to alter the plot. float64 accepts None as input, and return nan. remember that x < nan and x> nan are always false.
         self.threshold_up = np.float64(config['results'].get('plot_threshold_up'))
-        self.show_variance = True # default
+        self.show_variance = config['results']['show_variance']
+        self.variance_type = config['results']['variance_type']
         self.do_we_plot = parameters.do_we_plot
         self.save_data = parameters.save_data
         self.save_plot = parameters.save_plot
