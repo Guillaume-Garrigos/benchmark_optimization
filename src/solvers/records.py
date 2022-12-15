@@ -36,32 +36,37 @@ class Records():
         """ Once recording values is done, we process them:
             take average, min, and max over the repetitions
         """
-        param = self.param.plot 
+        param_plot = self.param.plot 
         result = self.value_repetition
         # result is a list of lists with different lengths
         self.value_avg = []
         self.value_min = []
         self.value_max = []
         self.xaxis = []
-        # cut it with min_len and convert it to numpy array, needed for plot
-        len_min = len(min(result, key=len)) # smallest length
-        result = np.array(list(map(lambda arr: arr[:len_min], result)))
-        # compute the average; maybe cut it when under threshold; check positivity
-        self.value_avg = np.mean(result, axis=0)
-        if param.threshold_down != 0.0 and param.threshold_down is not None:
-            threshold_down = param.threshold_down
-            len_cut = np.argmax(self.value_avg <= threshold_down) + \
-                1 if np.sum(self.value_avg <= threshold_down) > 0 else len(self.value_avg)
-        else:
-            len_cut = len(self.value_avg)
-        self.value_avg = self.value_avg[:len_cut]
-        # compute min/max for displaying variance
-        self.value_min = np.min(result, axis=0)[:len(self.value_avg)]
-        self.value_max = np.max(result, axis=0)[:len(self.value_avg)]
-        # now define the xaxis (number of epochs)
-        self.xaxis = np.arange(len(self.value_avg))
+        # First we want all the lists to have the same lenght so we cut them if needed
+        # At the same time we convert it to a numpy array, which will be easier than a list for plotting
+        len_min = len(min(result, key=len)) # what is the smallest length
+        result = np.array(list(map(lambda arr: arr[:len_min], result))) # cut the lists
         if time_value_repetition is not None:
             time_value_repetition = np.array(list(map(lambda arr: arr[:len_min], time_value_repetition)))
+        # compute the average, min/max and variance
+        self.value_avg = np.mean(result, axis=0)
+        self.value_min = np.min(result, axis=0)
+        self.value_max = np.max(result, axis=0)
+        self.value_std = np.std(result, axis=0)
+        # filter the values depending on the threshold parameter in the config file 
+        # (if we don't want to plot values outside a certain range)
+        # we decide that as soon as we are out of bounds we don't plot anymore
+        # TODO : might not be a great idea but so far so good
+        for i in range(self.value_avg.shape[0]):
+            if (param_plot.threshold_down is not None and self.value_avg[i] < param_plot.threshold_down) or (param_plot.threshold_up is not None and self.value_avg[i] > param_plot.threshold_up):
+                self.value_avg[i] = None
+                self.value_min[i] = None
+                self.value_max[i] = None
+                self.value_std[i] = None
+        # now define the xaxis (number of epochs)
+        self.xaxis = np.arange(len_min)
+        if time_value_repetition is not None:
             self.xaxis_time = np.mean(time_value_repetition, axis=0)
-            self.xaxis_time = self.xaxis_time[:len_cut]
+            self.xaxis_time = self.xaxis_time[:len_min]
         return

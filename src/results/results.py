@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 import pickle
 
@@ -239,29 +240,38 @@ class Results(Dict2D):
 
 
     def plot_curves_given_record(self, record_list, **args):
+        # this might be changed while creating the figure
+        negative_values_to_plot = any([any(record.value_avg<=0.0) for record in record_list])
         # loop over the algorithms (each will have different marker)
         markers = ["^-", "d-", "*-", ">-", "+-", "o-", "v-", "<-"]
-        values_are_negative = any([any(record.value_avg<=0.0) for record in record_list])
         for record, marker in zip(record_list, markers):
             # we won't plot the record if its part of a grid search unless specified
-            if (not record.param.config.get('grid_search_result')) or (self.param.results['grid_search_curves_plot']):
+            if (record.param.config.get('grid_search_result')) and (not self.param.results['grid_search_curves_plot']):
+                return
+            # ok we can plot
+            else:
+                # First define some verbose arguments for the plot
                 param_plot = record.param.plot # each of those have different legend name
-                # set the xaxis
                 if args['xaxis_time']:
                     xaxis = record.xaxis_time
                     param_plot.xlabel = "Time (s)"
                 else:
                     xaxis = record.xaxis
-                # if the values are >0 we plot with logscale. Otherwise, normal scale
                 label = record.flavor_name + args['label_append']
+                # Second we have to filter the values to plot wrt thresholds
+                # putting None in an array makes it a nan, which will be ignored at plot
                 # now we plot
-                if values_are_negative:
+                # if the values are >0 we plot with logscale. Otherwise, normal scale
+                if negative_values_to_plot:
                     plt.plot(xaxis, record.value_avg, marker, label=label, lw=2)   
                 else:             
                     plt.semilogy(xaxis, record.value_avg, marker, label=label, lw=2)
                 # eventually show variance (for repetitions)
                 if param_plot.show_variance:
-                    plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
+                    if param_plot.variance_type == 'minmax':
+                        plt.fill_between(xaxis, record.value_min, record.value_max, alpha=0.2)
+                    if param_plot.variance_type == 'std':
+                        plt.fill_between(xaxis, record.value_avg-record.value_std, record.value_avg+record.value_std, alpha=0.2)
 
     def plot_all(self, xaxis_time=False):
         # 1) plot the curves for each records
@@ -333,7 +343,7 @@ class Results(Dict2D):
                                 # if only one method wants logscale we do it
                                 # we implicitly assume that parameters are positive ...
                                 xscale = 'log' 
-                            if record.value_min[-1] <= 0.0:
+                            if any( value <= 0.0 for value in scatter_records ):
                                 # if only one part of the graph is negative we can have log scale
                                 yscale = 'linear'
                             if instance_param['grid_search'][parameter_name].get('label'):
@@ -343,7 +353,10 @@ class Results(Dict2D):
                                 title = instance_param['grid_search'][parameter_name].get('title')
                 # ok we have all the data about this solver. 
                 # it's plotting time
-                plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='o', label=solver_name) # https://stackoverflow.com/a/43990689
+                # normally errorbar is okay with nan values, just avoids plotting it 
+                # but displays warning so we silence it https://stackoverflow.com/a/58026329
+                with np.errstate(invalid='ignore'):
+                    plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='o', label=solver_name) # https://stackoverflow.com/a/43990689
             
             # now all "curves" are plotted. We make it look good.
             # scales 
