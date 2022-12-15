@@ -27,7 +27,7 @@ results:
 
 solvers_parameters: # general parameters applied to all solvers. can be overwritten by specific solver parameters below
     nb_repetition: 2
-    nb_epochs: 50
+    nb_epochs: 100
     tolerance: 1e-10
     initialization: random
     distribution: uniform
@@ -36,21 +36,21 @@ solvers_parameters: # general parameters applied to all solvers. can be overwrit
 solvers: 
     - FUVAL:
         s_type: zeros
-        lmbda_type: constant
-        stepsize_type: constant
+        lmbda_type: stepsize
+        stepsize_type: vanishing
         grid_search:
             stepsize_factor:
-                min: 0.0001
-                max: 1.0
+                min: 0.01
+                max: 10.0
                 number: 20
                 scale: log
 
     - SGD:
-        stepsize_type: constant
+        stepsize_type: vanishing
         grid_search:
             stepsize_factor:
-                min: 0.0001
-                max: 1.0
+                min: 0.01
+                max: 10.0
                 number: 20
                 scale: log
             

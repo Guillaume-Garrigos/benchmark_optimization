@@ -358,6 +358,7 @@ class Results(Dict2D):
             plt.ylabel(ylabel, fontsize=25)
             plt.legend(fontsize=30, loc='best')
             
+            plt.ylim(1e-5,1e1)
             # finally, show/save the figures
             if param_plot.save_plot:
                 fig_name = 'grid_search_' + parameter_name
