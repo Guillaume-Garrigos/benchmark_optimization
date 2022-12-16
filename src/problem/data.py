@@ -30,6 +30,7 @@ class Data():
             X, y = self.load(dataset)
         elif isinstance(dataset, dict):
             # this is a dict of parameters that we can use to generate a sythetic dataset
+            self.name = dataset.get('name', 'unspecified random')
             X, y = self.generate(dataset)
         else:
             raise Exception(f"Unknown dataset : {dataset}")
@@ -53,17 +54,18 @@ class Data():
         data = load_svmlight_file(data_path)
         return data[0].toarray(), data[1] # convert from scipy sparse matrix to dense if necessary
     
-    def generate_data(self):
-        problem_type = self.config['problem']['type']
-        nb_data = 100
-        nb_features = 50
-        std = 0.0
-        if problem_type == 'phase retrieval':
-            x = np.random.randn(nb_features)
-            A = np.random.randn(nb_data, nb_features)
-            noise = std* np.random.randn(nb_data)
-            b = (A @ x)**2 + noise
-        return A, b
+    def generate(self, param):
+        # given a dict of parameters, return a generated dataset
+        data_type = param.get('type', 100)
+        nb_data = param.get('nb_data', 100)
+        dim = param.get('dim', 50)
+        error_level = param.get('error_level', 0.0)
+        if data_type == 'phase retrieval':
+            w = np.random.randn(dim)
+            X = np.random.randn(nb_data, dim)
+            noise = error_level * np.random.randn(nb_data)
+            y = (X @ w)**2 + noise
+        return X, y
 
     def preprocess_data(self, X, y):
         logging.info("Data Sparsity: {}".format(sparsity(X)))

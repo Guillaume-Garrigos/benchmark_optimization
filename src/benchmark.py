@@ -60,16 +60,12 @@ def benchmark_plot(results):
 def benchmark_datasets(path_to_config=None):
     secure_config(path_to_config) # basically makes a copy of the config file
     config = get_config()
-    # loop over all datasets
-    for dataset in config['problem']['dataset_names']:
+    for dataset in config['problem']['dataset_names']: # loop over all datasets
         print(f"START running {dataset}")
-        # setup the main components of the problem, depending on the dataset
-        data = Data(dataset)
+        data = Data(dataset) # setup the main components of the problem, depending on the dataset
         problem = Problem(data) # gathers the components defining the problem
-        # solve the problem with multiple solvers
-        results = run_solvers(problem)
-        # plot the results
-        if problem.param.do_we_plot:
+        results = run_solvers(problem) # solve the problem with multiple solvers
+        if config['results']['do_we_plot']: # plot the results
             benchmark_plot(results)
         print(f"END running {dataset}")
     release_config() # deletes the copy of the config file
