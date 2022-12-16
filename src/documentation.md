@@ -76,3 +76,41 @@ results:
 A few other options are available :
 - label : a string, which modifies what is displayed as the name of the parameter in the figure. By default it is the hard-coded name of the variable.
 - title : a string, which is going to be used as the title of the figure.
+
+## Running on synthetic datasets (WIP)
+
+Datasets must be specified in the config file:
+
+```
+problem:
+    dataset_names:
+        - dummy
+        - foursquares
+    dataset_path_folder: datasets
+```
+
+Here we list datast names which are supposed to be loaded in the `datasets` folder, as `dummy.txt` and `foursquares.txt` files. 
+Instead, we can use synthetic data, generated from a few parameters. Those parameters should contain 
+
+- the `name` of this new dataset (for display purposes)
+- the `type` of this dataset (e.g. `classification`, `phase retrieval`)
+- the parameters needed to generate this dataset (typically `nb_data`, `dim`, `error_level`)
+
+For instance:
+
+```
+problem:
+    dataset_names:
+        - dummy
+        - name: test
+          type: classification
+          dim: 2
+        - name: noisy
+          type: classification
+          dim: 2
+          error: 0.1
+        - name: big dimension
+          type: classification
+          dim: 100
+    dataset_path_folder: datasets
+```

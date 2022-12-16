@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.random import multivariate_normal, randn
 from scipy.linalg.special_matrices import toeplitz
-from sklearn.datasets import load_svmlight_file
+from sklearn.datasets import load_svmlight_file, make_classification
 
 import logging
 from src.parameters import get_config
@@ -15,22 +15,22 @@ import os
 class Data():
     # basically contains the features and labels of a dataset
     def __init__(self, dataset=None):
+        # dataset should be a dict with a name and type
         self.feature = None
         self.label = None
-        self.name = ""
-        self.path = ""
+        self.name = dataset.get('name', 'unspecified')
+        self.type = dataset.get('type')
+        #self.path = ""
         self.nb_data = None
         self.dim = None
         self.config = get_config()
 
         # BEGIN : get access to the data
-        if isinstance(dataset, str):
-            # dataset is just the name of a dataset which is stored somewhere
-            self.name = dataset
-            X, y = self.load(dataset)
+        if self.type == 'load':
+            # load the dataset which is stored somewhere
+            X, y = self.load(self.name)
         elif isinstance(dataset, dict):
             # this is a dict of parameters that we can use to generate a sythetic dataset
-            self.name = dataset.get('name', 'unspecified random')
             X, y = self.generate(dataset)
         else:
             raise Exception(f"Unknown dataset : {dataset}")
@@ -54,17 +54,29 @@ class Data():
         data = load_svmlight_file(data_path)
         return data[0].toarray(), data[1] # convert from scipy sparse matrix to dense if necessary
     
-    def generate(self, param):
+    def generate(self, dataset_param):
         # given a dict of parameters, return a generated dataset
-        data_type = param.get('type', 100)
-        nb_data = param.get('nb_data', 100)
-        dim = param.get('dim', 50)
-        error_level = param.get('error_level', 0.0)
+        data_type = dataset_param.get('type', None)
+        nb_data = dataset_param.get('nb_data', 100)
+        dim = dataset_param.get('dim', 50)
+        error_level = dataset_param.get('error_level', 0.0)
         if data_type == 'phase retrieval':
             w = np.random.randn(dim)
             X = np.random.randn(nb_data, dim)
             noise = error_level * np.random.randn(nb_data)
             y = (X @ w)**2 + noise
+        if data_type == 'classification':
+            # https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_classification.html
+            X, y = make_classification(
+                    n_samples=nb_data, 
+                    n_features=dim, 
+                    n_informative=dim, 
+                    n_redundant=0,
+                    n_repeated=0,
+                    n_classes = 2,
+                    n_clusters_per_class = 1,
+                    class_sep = 1.0 - error_level
+                    )
         return X, y
 
     def preprocess_data(self, X, y):

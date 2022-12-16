@@ -29,7 +29,9 @@ def get_config():
         config = yaml.safe_load(file) # we get a dict from the file
     # apply the hardwritten default parameters if needed
     config = merge_default_param(config) 
-    # does some cleaning on the solvers parameters
+    # does some cleaning on the parameters
+    # clean the dataset list : turn them all into dicts
+    config = deal_with_dataset_list(config)
     # decide which parameter to apply per solver
     config = apply_default_solver_parameters(config) 
     # if we want to do grid search on some parameters, duplicate the solvers as needed
@@ -41,6 +43,17 @@ def get_config():
     config['results']['records_to_record'] = get_list_record_to_record(config)
     return config
 
+def deal_with_dataset_list(config):
+    # config.problem.dataset_names is written by the user as a list
+    # each element is either a string (name of a dataset to load)
+    # or a dict (parameters used to generate a dataset)
+    # we simply turn the string into a dict
+    dataset_list = config['problem']['dataset_names']
+    for i in range(len(dataset_list)):
+        dataset = dataset_list[i]
+        if isinstance(dataset, str):
+            dataset_list[i] = { 'name': dataset, 'type': 'load' }
+    return config    
 
 def merge_default_param(config):
     # local user > local default > global user > global default 
@@ -209,7 +222,7 @@ class Parameters():
         self.log_file = config['results']['log_file']
         self.measure_time = config['results']['measure_time']
         self.data_name = data.name
-        self.data_path = data.path
+        #self.data_path = data.path
         self.xp_name = config['results']['xp_name']
         self.output_folder = os.path.join(config['results']['output_path'], config['results']['xp_name'], self.data_name)
         # make sure that the folder exists everytime Parameters.output_folder is used
