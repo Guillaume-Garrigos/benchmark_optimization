@@ -58,20 +58,19 @@ def benchmark_plot(results):
     return
 
 def benchmark_datasets(path_to_config=None):
-    secure_config(path_to_config)
+    secure_config(path_to_config) # basically makes a copy of the config file
     config = get_config()
     # loop over all datasets
-    for dataset_name in config['problem']['dataset_names']:
-        print(f"START running {dataset_name}")
+    for dataset in config['problem']['dataset_names']:
+        print(f"START running {dataset}")
         # setup the main components of the problem, depending on the dataset
-        data = Data()
-        data.read(dataset_name, config['problem']['dataset_path_folder']) # gathers the components of the data
+        data = Data(dataset)
         problem = Problem(data) # gathers the components defining the problem
         # solve the problem with multiple solvers
         results = run_solvers(problem)
         # plot the results
         if problem.param.do_we_plot:
             benchmark_plot(results)
-        print(f"END running {dataset_name}")
-    release_config()
+        print(f"END running {dataset}")
+    release_config() # deletes the copy of the config file
     return

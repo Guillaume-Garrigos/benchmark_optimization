@@ -14,7 +14,7 @@ import os
 ##################################################
 class Data():
     # basically contains the features and labels of a dataset
-    def __init__(self):
+    def __init__(self, dataset=None):
         self.feature = None
         self.label = None
         self.name = ""
@@ -22,23 +22,36 @@ class Data():
         self.nb_data = None
         self.dim = None
         self.config = get_config()
-    
-    def read(self, dataset_name, dataset_path_folder=None):
-        # Obtain the data. Either loaded or generated
-        self.name = dataset_name
-        if dataset_name == "random":
-            X, y = self.generate_data()
+
+        # BEGIN : get access to the data
+        if isinstance(dataset, str):
+            # dataset is just the name of a dataset which is stored somewhere
+            self.name = dataset
+            X, y = self.load(dataset)
+        elif isinstance(dataset, dict):
+            # this is a dict of parameters that we can use to generate a sythetic dataset
+            X, y = self.generate(dataset)
         else:
-            self.path = os.path.join(dataset_path_folder, dataset_name) + '.txt'
-            X, y = load_data(self.path)
-            X = X.toarray()  # convert from scipy sparse matrix to dense if necessary
-        X, y = self.preprocess_data(X, y)
+            raise Exception(f"Unknown dataset : {dataset}")
+        # END : get access to the data
+
+        X, y = self.preprocess_data(X, y) # normalize data etc
+        # store what we have done
         n, d = X.shape
-        logging.info("Number of data points: {:d}; Number of features: {:d}".format(n, d))
         self.feature = X
         self.label = y
         self.nb_data = n
         self.dim = d
+        logging.info("Number of data points: {:d}; Number of features: {:d}".format(n, d))
+
+    def load(self, dataset_name):
+        """ load datasets from local storage in LibSVM format. """
+        dataset_path_folder = self.config['problem'].get('dataset_path_folder', None)
+        if dataset_path_folder is None:
+            raise Exception("No path was given about where this dataset is stored. Can be set in the config file in problem > dataset_path_folder")
+        data_path = os.path.join(dataset_path_folder, dataset_name) + '.txt'
+        data = load_svmlight_file(data_path)
+        return data[0].toarray(), data[1] # convert from scipy sparse matrix to dense if necessary
     
     def generate_data(self):
         problem_type = self.config['problem']['type']
@@ -72,10 +85,7 @@ class Data():
 
 ##################################################
 
-def load_data(data_path):
-    """Once datasets are downloaded, load datasets in LibSVM format."""
-    data = load_svmlight_file(data_path)
-    return data[0], data[1]
+
 
 
 def sparsity(data):
