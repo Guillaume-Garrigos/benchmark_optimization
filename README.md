@@ -6,6 +6,8 @@ This is for running benchmarks between optimization solvers. Enmphasis is put on
 
 1. Clone this repo
     - `git clone --recurse-submodules https://github.com/Guillaume-Garrigos/benchmark_optimization.git`
+    - `cd benchmark_optimization`
+    - `git submodule foreach --recursive git checkout main`
     - Note that we use the `--recurse-submodules` option here. This is for you to download all the solvers available to you.
 2. [optional] Add some specific solvers in `/src/solvers/`
     - you can type your own solvers in a python file, eventually in some subfolder.
