@@ -1,19 +1,40 @@
 import numpy as np
 
+def smart_inv_exp(x):
+    # given a number x, returns 1/(1+e^-x)
+    # make sure that we don't manipulate large numbers
+    # if x is an array, applies component-wise
+    # this function has intersting properties (lets note f(x)) :
+    # 1/f(x) = 1+e^-x
+    # 1-f(x) = 1/(1+e^x)
+    # f(-x) = e^x/(1+e^x)
+    try: # we hope x is an array
+        output = np.zeros(x.shape)
+    except:
+        print("trying to compute the logistic function on a float")
+    idx = x > 0
+    output[idx] = 1.0/(1 + np.exp(-x[idx]))
+    exp_smol = np.exp(x[~idx])
+    output[~idx] = exp_smol/(1 + exp_smol)
+    return output
 
 class LogisticLoss:
     @staticmethod
     def val(y, y_hat):
-        return np.log(1 + np.exp(-y * y_hat))
+        #return np.log(1 + np.exp(-y * y_hat))
+        return -np.log( smart_inv_exp(y * y_hat)) # use 1/f(x) = 1+e^-x
 
     @staticmethod
     def prime(y, y_hat):
-        return -y / (1 + np.exp(y * y_hat))
+        #return -y / (1 + np.exp(y * y_hat))
+        return -y * (1 - smart_inv_exp(y * y_hat)) # use 1-f(x) = 1/(1+e^x)
 
     @staticmethod
     def dprime(y, y_hat):
-        a = np.exp(y * y_hat)
-        return a / ((1 + a) ** 2)
+        #a = np.exp(y * y_hat)
+        #return a / ((1 + a) ** 2)
+        # instead we use f(-x)*(1-f(x)) = e^x/(1+e^x) * 1/(1+e^x)
+        return smart_inv_exp(-y * y_hat)*(1 - smart_inv_exp(y * y_hat))
 
 
 class L2:
