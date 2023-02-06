@@ -50,6 +50,9 @@ class Records():
         result = np.array(list(map(lambda arr: arr[:len_min], result))) # cut the lists
         if time_value_repetition is not None:
             time_value_repetition = np.array(list(map(lambda arr: arr[:len_min], time_value_repetition)))
+        # OPTIONAL : take absolute values
+        if param_plot.absolute_values:
+            result = np.abs(result)
         # compute the average, min/max and variance
         self.value_avg = np.mean(result, axis=0)
         self.value_min = np.min(result, axis=0)

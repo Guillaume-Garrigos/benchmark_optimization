@@ -23,6 +23,7 @@ results: # parameters about what to do with the experiments
     figsize: [18, 12] # size of the figure. The larger the cleaner?
     plot_threshold_down: 1.0e-12 # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
     plot_threshold_up: # same but upper threshold. None by default
+    absolute_values: False # if True, turn all values recorded into absolute values. Useful if we suspect that some values are epsilon-negative and this ruins a log plot.
     subopt: True # Should we plot sub-optimality curves?
     show_variance: True # when running repetitions, show variance for the results
     variance_type: 'minmax' # can be std

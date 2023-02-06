@@ -260,6 +260,7 @@ class Plot_param():
         self.measure_time = parameters.measure_time
         self.threshold_down = np.float64(config['results']['plot_threshold_down']) # option to alter the plot. float64 accepts None as input, and return nan. remember that x < nan and x> nan are always false.
         self.threshold_up = np.float64(config['results'].get('plot_threshold_up'))
+        self.absolute_values = config['results']['absolute_values']
         self.show_variance = config['results']['show_variance']
         self.variance_type = config['results']['variance_type']
         self.do_we_plot = parameters.do_we_plot
