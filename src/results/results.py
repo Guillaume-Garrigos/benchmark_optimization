@@ -318,16 +318,18 @@ class Results(Dict2D):
 
             # Loop over all solvers names
             solver_names = [*dict.fromkeys(config['solvers_parameters']['solvers_to_run'])]
-            for solver_name in solver_names:
+            flavor_names = [*dict.fromkeys(config['solvers_parameters']['flavors_to_run'])]
+            for flavor_name in flavor_names:
                 # we're gonna put in those lists all the points we want to plot for this solver_name
                 scatter_parameters = [] 
                 scatter_records = [] 
                 scatter_error_lower, scatter_error_upper = [],[] #  for the error below and above
                 # we collect all the instances which are part of this grid search
                 for solver_instance in config['solvers']:
-                    if solver_name in solver_instance.keys():
+                    solver_name = list(solver_instance.keys())[0]
+                    instance_param = solver_instance[solver_name]
+                    if flavor_name == instance_param['flavor_name']:
                         # Check if that instance is part of the grid search
-                        instance_param = solver_instance[solver_name]
                         if instance_param.get('grid_search') and parameter_name in instance_param['grid_search'].keys(): # ok we want to add it to our graph
                             # we access the Records of this instance
                             run_name = instance_param['run_name']
@@ -356,7 +358,7 @@ class Results(Dict2D):
                 # normally errorbar is okay with nan values, just avoids plotting it 
                 # but displays warning so we silence it https://stackoverflow.com/a/58026329
                 with np.errstate(invalid='ignore'):
-                    plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='o', label=solver_name) # https://stackoverflow.com/a/43990689
+                    plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='o', label=flavor_name) # https://stackoverflow.com/a/43990689
             
             # now all "curves" are plotted. We make it look good.
             # scales 

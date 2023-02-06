@@ -38,6 +38,7 @@ def get_config():
     config = deal_with_grid_search(config)
     # read the parameters and extract some useful information
     config['solvers_parameters']['solvers_to_run'] = get_list_solver_to_run(config)
+    config['solvers_parameters']['flavors_to_run'] = get_list_flavor_to_run(config)
     config['solvers_parameters']['solvers_to_load'] = get_list_solver_to_load(config)
     config['results']['records_to_plot'] = get_list_record_to_plot(config)
     config['results']['records_to_record'] = get_list_record_to_record(config)
@@ -127,7 +128,7 @@ def deal_with_grid_search(config):
                 new_entry_param['grid_search_param_names'] = grid_search_param_names 
                 new_entry_param['grid_search_result'] = True
                 # set a unique id
-                new_entry_param['flavor_name'] = new_entry_param['run_name'] + '_'+'_'.join([str(index[i]) for i in range(len(index))])
+                new_entry_param['run_name'] = new_entry_param['flavor_name'] + '_'+'_'.join([str(index[i]) for i in range(len(index))])
                 # set the specific parameters for this entry
                 for param_name, param_value in zip(grid_search_param_names, param_tuple):
                     new_entry_param[param_name] = param_value
@@ -163,6 +164,9 @@ def set_param_grid(input):
 
 def get_list_solver_to_run(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
+
+def get_list_flavor_to_run(config):
+    return [solver[key]['flavor_name'] for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
 
 def get_list_solver_to_load(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' in solver[key] and solver[key]['load']]
