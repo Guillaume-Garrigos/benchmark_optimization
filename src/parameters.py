@@ -73,7 +73,7 @@ def merge_default_param(config):
         if isinstance(list_item, dict):
             name_solver = list(list_item.keys())[0] # there should be only one key
             local_param = list_item[name_solver]
-        param = { **global_param, 'flavor_name' : name_solver }
+        param = { **global_param, 'flavor_name' : name_solver , 'run_name' : name_solver}
         # todo : deal with local default parameters
         solvers_list[idx] = { name_solver : { **param, **local_param } }
     return config
@@ -91,7 +91,7 @@ def apply_default_solver_parameters(config):
             lst[idx] = { solver : { **dict_default_param, 'flavor_name' : solver } }
         if isinstance(solver, dict):
             name_solver = list(solver.keys())[0] # there should be only one key
-            lst[idx] = { name_solver : { **dict_default_param, 'flavor_name' : name_solver, **solver[name_solver] } }
+            lst[idx] = { name_solver : { **dict_default_param, 'flavor_name' : name_solver, 'run_name' : name_solver, **solver[name_solver] } }
     return config
 
 
@@ -126,8 +126,8 @@ def deal_with_grid_search(config):
                 # leave a trace of what we did could be useful later? TODO
                 new_entry_param['grid_search_param_names'] = grid_search_param_names 
                 new_entry_param['grid_search_result'] = True
-                # set a unique name to the flavor
-                new_entry_param['flavor_name'] += '_'+'_'.join([str(index[i]) for i in range(len(index))])
+                # set a unique id
+                new_entry_param['flavor_name'] = new_entry_param['run_name'] + '_'+'_'.join([str(index[i]) for i in range(len(index))])
                 # set the specific parameters for this entry
                 for param_name, param_value in zip(grid_search_param_names, param_tuple):
                     new_entry_param[param_name] = param_value

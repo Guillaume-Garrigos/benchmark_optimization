@@ -29,15 +29,23 @@ def run_solvers(problem):
         algo_name = list(flavor.keys())[0]
         algo_param = flavor[algo_name]
         flavor_name = algo_param['flavor_name'] # could be different from algo_name if running multiple flavors
+        run_name = algo_param['run_name']
         # sanity check that the name given by the user is implemented
         if algo_name not in dict_solvers.keys():
             print(f"Warning: The Solver '{algo_name}' is not implemented. This will be skipped.")
         else:
             Algo = dict_solvers[algo_name] # we get the handle on the desired solver
-            print(f"Running solver '{algo_name}' with flavor '{flavor_name}' on the dataset '{problem.data.name}'")
+            # print a nice message
+            output = f"Running solver '{algo_name}'"
+            if flavor_name != algo_name:
+                output += f" with flavor '{flavor_name}'"
+            if run_name != flavor_name:
+                output += f" with id '{run_name}'"
+            output += f" on the dataset '{problem.data.name}'"
+            print(output)
             solver = Algo(problem, algo_param) # Instanciate a solver with flavoured parameters
             solver.run_repetition() # run the solver with repetitions
-            results.set_records(flavor_name, solver.records) # stores all the records from solver.records
+            results.set_records(run_name, solver.records) # stores all the records from solver.records
     # run is over
     # process the values (extracts mean, min, max), make it ready for analysis
     # provide each record with an alternate .xaxis_time to plot wrt time (optional)

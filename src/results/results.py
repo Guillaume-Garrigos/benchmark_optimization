@@ -257,7 +257,7 @@ class Results(Dict2D):
                     param_plot.xlabel = "Time (s)"
                 else:
                     xaxis = record.xaxis
-                label = record.flavor_name + args['label_append']
+                label = record.run_name + args['label_append']
                 # Second we have to filter the values to plot wrt thresholds
                 # putting None in an array makes it a nan, which will be ignored at plot
                 # now we plot
@@ -330,9 +330,9 @@ class Results(Dict2D):
                         instance_param = solver_instance[solver_name]
                         if instance_param.get('grid_search') and parameter_name in instance_param['grid_search'].keys(): # ok we want to add it to our graph
                             # we access the Records of this instance
-                            flavor_name = instance_param['flavor_name']
+                            run_name = instance_param['run_name']
                             record_name = instance_param['grid_search'][parameter_name].get('record', 'function_value')
-                            record = self.getvalue(flavor_name, record_name)
+                            record = self.getvalue(run_name, record_name)
                             # now we dig into it and extract the desired values
                             scatter_parameters.append(instance_param[parameter_name]) # the value of the parameter for this instance
                             scatter_records.append(record.value_avg[-1]) # the last value for this record

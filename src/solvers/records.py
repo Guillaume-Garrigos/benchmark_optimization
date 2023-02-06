@@ -11,6 +11,7 @@ class Records():
         self.name = name
         self.solver_name = solver.name
         self.flavor_name = solver.flavor_name
+        self.run_name = solver.run_name
         self.data_name = solver.problem.data.name
         self.value = []
         self.value_repetition = []
@@ -27,7 +28,7 @@ class Records():
 
     def save(self):
         if self.param.save_data:
-            path = os.path.join(self.param.output_folder, self.flavor_name + '-' + self.name)
+            path = os.path.join(self.param.output_folder, self.run_name + '-' + self.name)
             with open(path, 'wb') as fp:
                 pickle.dump(self, fp)
             return
