@@ -14,7 +14,7 @@ This is for running benchmarks between optimization solvers. Enmphasis is put on
 3. [optional] Download some datasets (the repo comes with a `dummy` dataset to run first experiments).
     - datasets must be placed in `/datasets/`, with the .txt extension.
     - datasets can be downloaded here : [LibSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary.html).
-4. Edit `config.py` to specify which solvers to run, with which parameters. If you want more details about what are the parameters, you can give a look at `/src/config_default.py`
+4. Edit `config.py` to specify which solvers to run, with which parameters. If you want more details about what are the parameters, you can give a look at `/src/config_default.py`, see also the [Documentation](https://github.com/Guillaume-Garrigos/benchmark_optimization/blob/main/src/documentation.md)
 5. Run experiments. You have different options:
     - Run `python run.py` or `bash run.sh`
     - Open a python script or notebook, and run the following lines:
