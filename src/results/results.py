@@ -337,9 +337,9 @@ class Results(Dict2D):
                             record = self.getvalue(run_name, record_name)
                             # now we dig into it and extract the desired values
                             scatter_parameters.append(instance_param[parameter_name]) # the value of the parameter for this instance
-                            scatter_records.append(record.value_avg[-1]) # the last value for this record
-                            scatter_error_lower.append(record.value_avg[-1] - record.value_min[-1])
-                            scatter_error_upper.append(record.value_max[-1] - record.value_avg[-1])
+                            scatter_records.append(np.min(record.value_avg)) # the best value for this record
+                            scatter_error_lower.append(np.min(record.value_avg) - np.min(record.value_min))
+                            scatter_error_upper.append(np.min(record.value_max) - np.min(record.value_avg))
                             # get access to a few plot parameters
                             if instance_param['grid_search'][parameter_name]['scale'] == 'log':
                                 # if only one method wants logscale we do it
