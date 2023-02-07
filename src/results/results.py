@@ -358,7 +358,7 @@ class Results(Dict2D):
                 # normally errorbar is okay with nan values, just avoids plotting it 
                 # but displays warning so we silence it https://stackoverflow.com/a/58026329
                 with np.errstate(invalid='ignore'):
-                    plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], fmt='o', label=flavor_name) # https://stackoverflow.com/a/43990689
+                    plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], label=flavor_name, marker='o', linestyle='dashed') # https://stackoverflow.com/a/43990689
             
             # now all "curves" are plotted. We make it look good.
             # scales 
