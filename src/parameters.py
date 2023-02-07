@@ -9,7 +9,7 @@ def secure_config(path_to_config=None):
     # keeps a copy of the config file with a fixed location/name
     # so we can access it anytime
     if path_to_config is None:
-        # we assume that the path was 'config.py'
+        # we assume that the path was 'config.yml'
         path = 'config.yml'
     else:
         path = path_to_config
@@ -115,6 +115,7 @@ def deal_with_grid_search(config):
             grid_search_param_names = list(param_dict['grid_search'].keys())
             grid_search_info = merge_list(grid_search_info, grid_search_param_names)
             # if the values come as a dict, replace it with a list
+            # in both cases, the parameter values are now in ['grid_search'][parameter_name]['grid']
             for parameter_name in grid_search_param_names:
                 param_dict['grid_search'][parameter_name] = set_param_grid(param_dict['grid_search'][parameter_name])
             # loop over all possible parameter combinations
@@ -156,10 +157,11 @@ def set_param_grid(input):
         input['scale'] = input.get('scale', 'linear') # default is linear
         input['number'] = input.get('number', 10) # default is 10
         if input['scale'] == 'linear':
-            input['grid'] = np.linspace(input['min'], input['max'], num=input['number'])
+            # reason why we float the values is because np.float contains too information and is nasty to export in yaml, see https://stackoverflow.com/questions/40691311/save-results-in-yaml-file-with-python
+            input['grid'] = [float(t) for t in np.linspace(input['min'], input['max'], num=input['number'])]
             return input
         elif input['scale'] == 'log':
-            input['grid'] = np.geomspace(input['min'], input['max'], num=input['number'])
+            input['grid'] = [float(t) for t in np.geomspace(input['min'], input['max'], num=input['number'])]
             return input
 
 def get_list_solver_to_run(config):
@@ -234,8 +236,12 @@ class Parameters():
             if not os.path.exists(self.output_folder): 
                 os.makedirs(self.output_folder)
             # save the config into a .yml file so it can be reused in the future
+            """
             with open(os.path.join(config['results']['output_path'], config['results']['xp_name'], 'config.yml'), 'w') as outfile:
+                yaml.Dumper.ignore_aliases = lambda *args : True # see https://stackoverflow.com/a/30682604
                 yaml.dump(config, outfile, default_flow_style=False)
+            """
+            shutil.copy(os.path.join('src','config.yml'), os.path.join(config['results']['output_path'], config['results']['xp_name'], 'config.yml'))
         self.plot = Plot_param(self) # this is last bc it calls Parameters
     
     
