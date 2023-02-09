@@ -118,7 +118,12 @@ class Problem():
                 self.optimal_solution = optimum
                 self.optimal_value = f_opt
                 self.optimal_value_sampled = [self.function_sampled(optimum, i) for i in range(self.nb_data)]
+                self.optimal_gradient_sqnorm_sampled = [np.linalg.norm(self.gradient_sampled(optimum, i))**2 for i in range(self.nb_data)]
         return
+    
+    def get_gradient_variance(self, batch_size=1):
+        if batch_size == 1:
+            return np.average( self.optimal_gradient_sqnorm_sampled )
     
     def expected_smoothness(self):
         if self.loss_name == "L2":
