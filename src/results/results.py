@@ -345,7 +345,7 @@ class Results(Dict2D):
                                 # if only one method wants logscale we do it
                                 # we implicitly assume that parameters are positive ...
                                 xscale = 'log' 
-                            if any( value <= 0.0 for value in scatter_records ):
+                            if any( value < 0.0 for value in scatter_records ):
                                 # if only one part of the graph is negative we can have log scale
                                 yscale = 'linear'
                             if instance_param['grid_search'][parameter_name].get('label'):
