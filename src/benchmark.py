@@ -16,7 +16,7 @@ def run_solvers(problem):
     # setup the logging and outputing
     logging.basicConfig(
         filename=os.path.join(problem.param.output_folder, problem.param.log_file),
-        level=logging.INFO, format='%(message)s')
+        level=logging.INFO, format='%(message)s', force=True) # force see https://stackoverflow.com/a/49202811
     logging.info(time.ctime(time.time()))
     # Run solvers
     print(f"Running each solver on {problem.data.name}")
