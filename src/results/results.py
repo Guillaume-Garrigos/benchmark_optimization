@@ -103,6 +103,7 @@ class Results(Dict2D):
     def __init__(self, problem):
         super().__init__()
         self.param = Parameters(problem.data)
+        self.summary = problem.summary
 
     def set_records(self, solver_name, records_dict):
         for record_name in records_dict.keys():
@@ -314,7 +315,7 @@ class Results(Dict2D):
             xscale = 'linear' # default value for the plot
             yscale = 'log' # default value for the plot
             xlabel = parameter_name # default
-            title = 'Grid search comparison' # default
+            title = f"Grid search comparison - Dataset: {self.summary['dataset_name']}" # default
 
             # Loop over all solvers names
             solver_names = [*dict.fromkeys(config['solvers_parameters']['solvers_to_run'])]
