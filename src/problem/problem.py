@@ -105,10 +105,12 @@ class Problem():
     def solve(self):
         # gets the "exact" solution of the problem
         solution = {}
+        new_solution = False
         if self.param.config['problem']['load_solution']:
             solution = self.load_solution()
         if solution == {}: # load failed or we don't want to load
             solution = self.compute_solution()
+            new_solution = True
         # we check the solution is good
         g_0 = self.gradient(np.zeros(self.dim))
         if solution['gradient_norm'] < 1e-5*np.sqrt(g_0 @ g_0):
@@ -116,7 +118,6 @@ class Problem():
         else: # failure
             print("The gradient at given optimum is relatively larger than 1e-5, we think it is not an optimum")
             solution = {}
-    
         # store it in the Problem class
         if solution != {}: 
             self.we_know_solution = True
@@ -125,8 +126,8 @@ class Problem():
             self.optimal_value = solution['infimum']
             self.optimal_value_sampled = [self.function_sampled(solution['minimizer'], i) for i in range(self.nb_data)]
             self.optimal_gradient_sqnorm_sampled = [np.linalg.norm(self.gradient_sampled(solution['minimizer'], i))**2 for i in range(self.nb_data)]
-            # save the solution if needed
-            if self.param.config['problem'].get('save_solution', False):
+            # save the solution if we want ; and if it wasn't loaded already
+            if self.param.config['problem'].get('save_solution', False) and new_solution:
                 self.save_solution(solution)
         return
     
@@ -158,7 +159,7 @@ class Problem():
             print("Solve the problem with scipy fmin_l_bfgs_b")
             # TODO review this bc i don't understand why we complicate things with utils.stuff... Maybe inherited from Jiabin?
             pgtol = self.param.config['problem']['pgtol']
-            factr = self.param.config['problem']['factr']
+            factr = float(self.param.config['problem']['factr'])
             optimum, f_opt, info = fmin_l_bfgs_b(
                 func=utils.f_val_logistic, 
                 x0=np.zeros(self.dim), 
@@ -180,7 +181,7 @@ class Problem():
     
     def load_solution(self):
         # if it exists, load the solution of the problem at hand
-        # returns a dict (contains the solution and stuff) or an empty dict (if no load)
+        # returns a dict (contains the solution and stuff) eventually empty
         folder = self.param.config['problem']['solution_path_folder']
         if os.path.exists(folder):
             for file in os.scandir(folder):
