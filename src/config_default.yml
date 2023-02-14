@@ -7,6 +7,13 @@ problem: # parameters about the problem to solve
     dataset_names: # a list of dataset names (stored as name.txt)
         - dummy
     dataset_path_folder: datasets # folder where the dataset are stored
+    # a few more optional parameters, about the exact solution of the problem, which is computed with scipy.optimize.fmin_l_bfgs_b, see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fmin_l_bfgs_b.html#scipy.optimize.fmin_l_bfgs_b
+    solution_path_folder: datasets # folder where the solution of the problem is stored
+    save_solution: False # Should we compute and save the exact solution of the current problem? 
+    load_solution: False # Should we load the exact solution of the current problem? If True will skip loading which saves time. Will look for a solution in the above indicated folder. Beware: if there is more than one solution corresponding to the parameters of the problem, we will pick the first one encountered
+    pgtol: 1e-10 # pgtol parameter of scipy.optimize.fmin_l_bfgs_b
+    factr: 1e7 # factr parameter of scipy.optimize.fmin_l_bfgs_b. 10.0 for extreme precision
+
     
 results: # parameters about what to do with the experiments
     output_path: output # folder path to store experiments results
@@ -21,10 +28,10 @@ results: # parameters about what to do with the experiments
     
     dpi: 50 # quality of the produced graphs. Strong impact on performance.
     figsize: [18, 12] # size of the figure. The larger the cleaner?
-    plot_threshold_down: 1.0e-12 # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
-    plot_threshold_up: # same but upper threshold. None by default
+    plot_threshold_down: null # value under which we stop plotting results (typically machine precision, but also for handling cases when one solver converges way too fast with respect to the others). None if we don't want to threshold at all.
+    plot_threshold_up: null # same but upper threshold. None by default
     absolute_values: False # if True, turn all values recorded into absolute values. Useful if we suspect that some values are epsilon-negative and this ruins a log plot.
-    subopt: True # Should we plot sub-optimality curves?
+    use_solution: True # Should we use the "exact" solution of the problem for plotting? Typically for using inf f when plotting f(x) - inf f. Can also be use to set parameters of some algorithms. Setting True implies that the solution will be computed (or loaded)
     show_variance: True # when running repetitions, show variance for the results
     variance_type: 'minmax' # can be std
     latex: True # SHould we activate latex for the fonts? Allows to write more math. True by default, but makes the first plot a bit slow ...
