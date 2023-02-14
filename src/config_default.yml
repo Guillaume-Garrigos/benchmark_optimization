@@ -24,7 +24,7 @@ results: # parameters about what to do with the experiments
     do_we_plot: True # do we plot anything at all?
     grid_search_comparison_plot: True # in case of grid search do we want to plot a specific graph comparing them?
     grid_search_curves_plot: False # in case of grid search do we want to plot the plenty curves for each record?
-    log_file: log.txt # log file name 
+    log_file: log.log # log file name 
     
     dpi: 50 # quality of the produced graphs. Strong impact on performance.
     figsize: [18, 12] # size of the figure. The larger the cleaner?
