@@ -137,23 +137,38 @@ class Results(Dict2D):
                     else:
                         record.process_values()
     
-    def load(self, solvers_to_load):
-        # solvers_to_load is a list of strings referring to Solver.name
+    def load(self, flavors_to_load):
+        # flavors_to_load is a list of strings referring to Solver.name
         # first get a list of all possible records (we omit the temp records starting with '_')
         # note that pointer.__name__ is the name we use in class BLAH(Record)
         # while pointer.name is a string we define as a class variable before init, which we use to save
         list_record_name = [ pointer.name for pointer in Records.__subclasses__() if pointer.__name__[0] != '_' ]
-        for solver_name in solvers_to_load:
+        for flavor_name in flavors_to_load:
             for record_name in list_record_name:
-                    # we check if the couple (solver_name, record_name) was saved
-                    # its path would be:
-                    path = os.path.join(self.param.output_folder, solver_name + '-' + record_name)
-                    # if it is there, we load it
-                    if os.path.exists(path):
-                        with open(path, 'rb') as fp:
-                            record = pickle.load(fp)
-                            self.setvalue(solver_name, record_name, record)
-                        print(f"Loaded record for the solver {solver_name} : {record_name}")
+                # we check if a couple (run_name, record_name) was saved 
+                # where run_name was part of flavor_name
+                folder = self.param.output_folder
+                if os.path.exists(folder):
+                    for file in os.scandir(folder): # look at all the files in the output folder
+                        # filter stupid files with extensions
+                        if file.path.endswith(record_name): # this is how we save it in record.save
+                            with open(file.path, 'rb') as file:
+                                record = pickle.load(file)
+                            # check that the file is a result
+                            if isinstance(record, Records): # just in case there are other files in there
+                                # is this the solution of our problem at hand? and of the flavor we want?
+                                if record.summary == self.summary and record.flavor_name == flavor_name:
+                                    # registers this record as a (run_name, record_name) in results
+                                    self.setvalue(record.run_name, record_name, record)
+                                    print(f"Loaded record {record_name} for the run {record.run_name}")
+                    # # its path would be:
+                    # path = os.path.join(self.param.output_folder, run_name + '-' + record_name)
+                    # # if it is there, we load it
+                    # if os.path.exists(path):
+                    #     with open(path, 'rb') as fp:
+                    #         record = pickle.load(fp)
+                    #         self.setvalue(run_name, record_name, record)
+                    #     print(f"Loaded record {record_name} for the flavored solver {run_name}")
         return
 
     def do_we_plot_curves(self, record_names):
@@ -186,7 +201,11 @@ class Results(Dict2D):
             record_names = [record_names]
         if not self.do_we_plot_curves(record_names): # if not we just do nothing
             return
-        else: # we plot
+        else: # we plot 
+            if len(record_names) == 1:
+                print(f"Start plotting the results for {record_names[0]}")
+            else:
+                print(f"Start plotting the compared results for: {record_names}")
             # set parameters
             param_plot = self.param.plot
             # first setup of the figure TODO check if this isn't slowing down everything, put a if maybe
@@ -202,6 +221,7 @@ class Results(Dict2D):
             for record_name in record_names:
                 # Get a list of Records() corresponding to all the Solvers() recording record_name
                 record_list = self.extract_list_given_record(record_name)
+                print([record.run_name for record in record_list])
                 # add curves to the canvas
                 label_append = ""
                 if there_is_mixed_records:
@@ -279,7 +299,7 @@ class Results(Dict2D):
         for record_name in self.param.records_to_plot:
             # here we simply plot this record, for every solver it is related to
             if record_name in self.ykeys(): # safecheck
-                print(f"Start plotting the results for {record_name}")
+                
                 self.plot_parallel(record_name)
                 if xaxis_time: # second pass for the plots wrt time
                     self.plot_parallel(record_name, xaxis_time = True)
@@ -288,11 +308,9 @@ class Results(Dict2D):
             # comparison is a list of Record names
             # we'll now plot different records on the same plot, for every solver
             if all( record_name in self.ykeys() for record_name in comparison ): # safecheck
-                print(f"Start plotting the compared results for: {comparison}")
                 self.plot_parallel(comparison)
         # 3) plot the results on the grid search
         for parameter_name in self.param.config['results']['grid_search_to_plot']:
-            print(f"Start plotting the grid search results for the parameter: {parameter_name}")
             self.plot_grid_search(parameter_name)
     
     def plot_grid_search(self, parameter_name):
@@ -302,7 +320,7 @@ class Results(Dict2D):
         if not config['results']['grid_search_comparison_plot']: # we dont plot
             return
         else: # lets go
-
+            print(f"Start plotting the grid search results for the parameter: {parameter_name}")
             # set parameters
             param_plot = self.param.plot
             # first setup of the figure TODO check if this isn't slowing down everything, put a if maybe
@@ -318,8 +336,7 @@ class Results(Dict2D):
             title = f"Grid search comparison - Dataset: {self.summary['dataset_name']}" # default
 
             # Loop over all solvers names
-            solver_names = [*dict.fromkeys(config['solvers_parameters']['solvers_to_run'])]
-            flavor_names = [*dict.fromkeys(config['solvers_parameters']['flavors_to_run'])]
+            flavor_names = config['solvers_parameters']['flavors_to_run'] + config['solvers_parameters']['flavors_to_load']
             for flavor_name in flavor_names:
                 # we're gonna put in those lists all the points we want to plot for this solver_name
                 scatter_parameters = [] 
@@ -360,6 +377,7 @@ class Results(Dict2D):
                 # but displays warning so we silence it https://stackoverflow.com/a/58026329
                 with np.errstate(invalid='ignore'):
                     plt.errorbar(scatter_parameters, scatter_records, yerr=[scatter_error_lower, scatter_error_upper], label=flavor_name, marker='o', linestyle='dashed') # https://stackoverflow.com/a/43990689
+                    #print(f"values for {flavor_name} : {scatter_records}")
             
             # now all "curves" are plotted. We make it look good.
             # scales 

@@ -33,7 +33,8 @@ def run_solvers(problem):
         # sanity check that the name given by the user is implemented
         if algo_name not in dict_solvers.keys():
             print(f"Warning: The Solver '{algo_name}' is not implemented. This will be skipped.")
-        else:
+        # check that this flavor is in the list of flavors authorized to run (eg if it is loaded)
+        elif flavor_name in problem.param.config['solvers_parameters']['flavors_to_run']: 
             Algo = dict_solvers[algo_name] # we get the handle on the desired solver
             # print a nice message
             output = f"Running solver '{algo_name}'"
@@ -61,7 +62,7 @@ def benchmark_plot(results):
     # We eventually complete results with records to load
     # we assume each record is loaded with a following path:
     #   output_directory/data_name/solver_name-record_name
-    results.load(results.param.solvers_to_load)
+    results.load(results.param.flavors_to_load)
     results.plot_all(xaxis_time = results.param.measure_time)
     return
 

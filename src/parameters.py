@@ -39,7 +39,7 @@ def get_config():
     # read the parameters and extract some useful information
     config['solvers_parameters']['solvers_to_run'] = get_list_solver_to_run(config)
     config['solvers_parameters']['flavors_to_run'] = get_list_flavor_to_run(config)
-    config['solvers_parameters']['solvers_to_load'] = get_list_solver_to_load(config)
+    config['solvers_parameters']['flavors_to_load'] = get_list_flavor_to_load(config)
     config['results']['records_to_plot'] = get_list_record_to_plot(config)
     config['results']['records_to_record'] = get_list_record_to_record(config)
     return config
@@ -74,9 +74,11 @@ def merge_default_param(config):
         if isinstance(list_item, dict):
             name_solver = list(list_item.keys())[0] # there should be only one key
             local_param = list_item[name_solver]
-        param = { **global_param, 'flavor_name' : name_solver , 'run_name' : name_solver}
+        param = { **global_param, **local_param } # local overwrite global parameters
+        param['flavor_name'] = param.get('flavor_name', name_solver) # add flavor and run names if nonexistent
+        param['run_name'] = param.get('run_name', param.get('flavor_name'))
         # todo : deal with local default parameters
-        solvers_list[idx] = { name_solver : { **param, **local_param } }
+        solvers_list[idx] = { name_solver : param }
     return config
         
 def apply_default_solver_parameters(config):
@@ -168,10 +170,14 @@ def get_list_solver_to_run(config):
     return [key for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
 
 def get_list_flavor_to_run(config):
-    return [solver[key]['flavor_name'] for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
+    lst = [solver[key]['flavor_name'] for solver in config['solvers'] for key in solver.keys() if 'load' not in solver[key] or not solver[key]['load']]
+    lst = [*dict.fromkeys(lst)] # remove duplicates
+    return lst
 
-def get_list_solver_to_load(config):
-    return [key for solver in config['solvers'] for key in solver.keys() if 'load' in solver[key] and solver[key]['load']]
+def get_list_flavor_to_load(config):
+    lst = [solver[key]['flavor_name'] for solver in config['solvers'] for key in solver.keys() if 'load' in solver[key] and solver[key]['load']]
+    lst = [*dict.fromkeys(lst)] # remove duplicates
+    return lst
 
 def get_list_record_to_plot(config):
     if 'records_to_plot' in config['results'].keys() and config['results']['records_to_plot'] is not None:
@@ -215,8 +221,8 @@ class Parameters():
         self.distribution = config['solvers_parameters']['distribution']
         self.initialization = config['solvers_parameters']['initialization'] # initial point for all algorithms
         self.solvers = config['solvers'] # list of dict containing all we need to run each algorithm
-        self.solvers_to_run = config['solvers_parameters']['solvers_to_run']
-        self.solvers_to_load = config['solvers_parameters']['solvers_to_load']
+        #self.solvers_to_run = config['solvers_parameters']['solvers_to_run']
+        self.flavors_to_load = config['solvers_parameters']['flavors_to_load']
         self.records_to_plot = config['results']['records_to_plot']
         self.records_to_record = config['results']['records_to_record']
         # Options for saving, logging, plotting

@@ -13,6 +13,7 @@ class Records():
         self.flavor_name = solver.flavor_name
         self.run_name = solver.run_name
         self.data_name = solver.problem.data.name
+        self.summary = solver.problem.summary
         self.value = []
         self.value_repetition = []
         self.param = copy.deepcopy(solver.param) # we need a copy here otherwise record_name will change everytime. We could have been smarter but so far doesn't seem to explode memory
@@ -28,6 +29,7 @@ class Records():
 
     def save(self):
         if self.param.save_data:
+            # we choose to save records with non unique filename. This means that if we repeatedly run the same solvers on same problems, we will not accumulate too much files. If we want to compare different parameters and save them all, we should use flavors
             path = os.path.join(self.param.output_folder, self.run_name + '-' + self.name)
             with open(path, 'wb') as fp:
                 pickle.dump(self, fp)
