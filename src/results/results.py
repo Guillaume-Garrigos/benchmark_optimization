@@ -151,24 +151,16 @@ class Results(Dict2D):
                 if os.path.exists(folder):
                     for file in os.scandir(folder): # look at all the files in the output folder
                         # filter stupid files with extensions
-                        if file.path.endswith(record_name): # this is how we save it in record.save
+                        if file.path.endswith('.records'): # this is how we save it in record.save
                             with open(file.path, 'rb') as file:
                                 record = pickle.load(file)
                             # check that the file is a result
                             if isinstance(record, Records): # just in case there are other files in there
-                                # is this the solution of our problem at hand? and of the flavor we want?
-                                if record.summary == self.summary and record.flavor_name == flavor_name:
+                                # is this the record of our problem at hand? and of the flavor we want? and of the record we want?
+                                if record.summary == self.summary and record.flavor_name == flavor_name and record.name == record_name:
                                     # registers this record as a (run_name, record_name) in results
-                                    self.setvalue(record.run_name, record_name, record)
-                                    print(f"Loaded record {record_name} for the run {record.run_name}")
-                    # # its path would be:
-                    # path = os.path.join(self.param.output_folder, run_name + '-' + record_name)
-                    # # if it is there, we load it
-                    # if os.path.exists(path):
-                    #     with open(path, 'rb') as fp:
-                    #         record = pickle.load(fp)
-                    #         self.setvalue(run_name, record_name, record)
-                    #     print(f"Loaded record {record_name} for the flavored solver {run_name}")
+                                    self.setvalue(record.run_name, record.name, record)
+                                    print(f"Loaded record {record.name} for the run {record.run_name}")
         return
 
     def do_we_plot_curves(self, record_names):

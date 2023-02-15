@@ -30,7 +30,7 @@ class Records():
     def save(self):
         if self.param.save_data:
             # we choose to save records with non unique filename. This means that if we repeatedly run the same solvers on same problems, we will not accumulate too much files. If we want to compare different parameters and save them all, we should use flavors
-            path = os.path.join(self.param.output_folder, self.run_name + '-' + self.name)
+            path = os.path.join(self.param.output_folder, self.run_name + '-' + self.name + '.records')
             with open(path, 'wb') as fp:
                 pickle.dump(self, fp)
             return
