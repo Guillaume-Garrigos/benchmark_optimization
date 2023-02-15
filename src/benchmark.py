@@ -18,6 +18,7 @@ def run_solvers(problem):
         filename=os.path.join(problem.param.output_folder, problem.param.log_file),
         level=logging.INFO, format='%(message)s', force=True) # force see https://stackoverflow.com/a/49202811
     logging.info(time.ctime(time.time()))
+    logging.info(f"Running each solver on {problem.data.name}")
     # Run solvers
     print(f"Running each solver on {problem.data.name}")
     results = Results(problem) # an empty 2D dict, each coefficient will be a Record
@@ -47,6 +48,8 @@ def run_solvers(problem):
             solver = Algo(problem, algo_param) # Instanciate a solver with flavoured parameters
             solver.run_repetition() # run the solver with repetitions
             results.set_records(run_name, solver.records) # stores all the records from solver.records
+    logging.info(f"Running each solver on {problem.data.name} is over")
+    logging.info(time.ctime(time.time()))
     # run is over
     # process the values (extracts mean, min, max), make it ready for analysis
     # provide each record with an alternate .xaxis_time to plot wrt time (optional)
